@@ -1,22 +1,7 @@
-<!doctype html>
-<html ng-app="app" lang="en" ng-strict-di>
+<div class="Container about">
 
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-    <link rel="shortcut icon" href="favicon.ico" />
-
-    <title>Table Editor V1</title>
-  <script type="text/javascript" src="table-editor.js"></script></head>
-
-  <body>
     <div
-      class="container-fluid typeahead-demo"
-      ng-controller="MainController as c">
+      class="container-fluid typeahead-demo">
 
       <div class="row">
         <div class="col-xs-3">
@@ -34,8 +19,8 @@
               role="menu"
               aria-labelledby="simple-btn-keyboard-nav">
 
-              <li ng-repeat="e in c.examplesYAML" role="menuitem">
-                <a ng-click="c.loadSourceYAMLItem(e.file, e.title, e.url)" href="">
+              <li ng-repeat="e in aboutCtrl.examplesYAML" role="menuitem">
+                <a ng-click="aboutCtrl.loadSourceYAMLItem(e.file, e.title, e.url)" href="">
                   {{e.title}}
                 </a>
               </li>
@@ -45,7 +30,7 @@
         <div class="col-xs-6">
           <div class="input-group input-group-sm">
             <input
-              ng-model="c.YAMLURL"
+              ng-model="aboutCtrl.YAMLURL"
               type="text"
               class="form-control input-group-xs"
               placeholder="Enter a URL to a CSV/TSV file"
@@ -54,9 +39,9 @@
             <span class="input-group-btn">
               <button
                 type="button"
-                ng-disabled="c.YAMLURL.length === 0"
+                ng-disabled="aboutCtrl.YAMLURL.length === 0"
                 class="btn btn-success btn-xs btn-block input-group-button-xs"
-                ng-click="c.loadURLYAML(c.YAMLURL)">
+                ng-click="aboutCtrl.loadURLYAML(aboutCtrl.YAMLURL)">
                 Load
               </button>
             </span>
@@ -66,7 +51,7 @@
           <div
             ngf-drop
             ngf-select
-            ng-model="c.fileYAML"
+            ng-model="aboutCtrl.fileYAML"
             class="drop-box"
             ngf-drag-over-class="'dragover'"
             ngf-multiple="false"
@@ -81,58 +66,58 @@
         </div>
       </div>
 
-      <div class="row" ng-hide="!c.sourceYAML">
+      <div class="row" ng-hide="!aboutCtrl.sourceYAML">
         <div class="col-xs-12">
           <button
             type="button"
             class="btn btn-xs btn-primary btn-block"
-            ng-model="c.showYAMLSource"
+            ng-model="aboutCtrl.showYAMLSource"
             uib-btn-checkbox>
             <span class="pull-left glyphicon"
-              ng-class="c.showYAMLSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+              ng-class="aboutCtrl.showYAMLSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
               aria-hidden="true">
             </span>
-            Source YAML: <b>{{c.titleYAML}}</b>
+            Source YAML: <b>{{aboutCtrl.titleYAML}}</b>
           </button>
 
           <div
             class="pre-scrollable"
-            ng-if="c.showYAMLSource">
-            <pre><code>{{c.sourceYAML}}</code></pre>
+            ng-if="aboutCtrl.showYAMLSource">
+            <pre><code>{{aboutCtrl.sourceYAML}}</code></pre>
           </div>
         </div>
       </div>
 
-      <div class="row" ng-hide="!c.sourceYAML">
+      <div class="row" ng-hide="!aboutCtrl.sourceYAML">
         <div class="col-xs-12">
           <button
             type="button"
             class="btn btn-xs btn-primary btn-block"
-            ng-model="c.showYAMLParsed"
+            ng-model="aboutCtrl.showYAMLParsed"
             uib-btn-checkbox>
             <span class="pull-left glyphicon"
-              ng-class="c.showYAMLParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+              ng-class="aboutCtrl.showYAMLParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
               aria-hidden="true">
             </span>
-            Parsed YAML: <b>{{c.titleYAML}}</b>
+            Parsed YAML: <b>{{aboutCtrl.titleYAML}}</b>
           </button>
 
 
           <div
-            ng-hide="!c.showYAMLParsed">
+            ng-hide="!aboutCtrl.showYAMLParsed">
             <div
               id="YAMLParsed"
               class="table-container YAMLParsed">
-              <json-formatter json="c.parsedYAML" open="2">
+              <json-formatter json="aboutCtrl.parsedYAML" open="2">
               </json-formatter>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="row" ng-if="c.errorMessageYAML">
+      <div class="row" ng-if="aboutCtrl.errorMessageYAML">
         <div class="col-xs-12">
-          <pre>{{c.errorMessageYAML}}</pre>
+          <pre>{{aboutCtrl.errorMessageYAML}}</pre>
         </div>
       </div>
 
@@ -152,8 +137,8 @@
               role="menu"
               aria-labelledby="simple-btn-keyboard-nav">
 
-              <li ng-repeat="e in c.examplesXSV" role="menuitem">
-                <a ng-click="c.loadSourceXSVItem(e.file, e.title, e.url)" href="">
+              <li ng-repeat="e in aboutCtrl.examplesXSV" role="menuitem">
+                <a ng-click="aboutCtrl.loadSourceXSVItem(e.file, e.title, e.url)" href="">
                   {{e.title}}
                 </a>
               </li>
@@ -163,7 +148,7 @@
         <div class="col-xs-6">
           <div class="input-group input-group-sm">
             <input
-              ng-model="c.XSVURL"
+              ng-model="aboutCtrl.XSVURL"
               type="text"
               class="form-control input-group-xs"
               placeholder="Enter a URL to a CSV/TSV file"
@@ -172,9 +157,9 @@
             <span class="input-group-btn">
               <button
                 type="button"
-                ng-disabled="c.XSVURL.length === 0"
+                ng-disabled="aboutCtrl.XSVURL.length === 0"
                 class="btn btn-success btn-xs btn-block input-group-button-xs"
-                ng-click="c.loadURLXSV(c.XSVURL)">
+                ng-click="aboutCtrl.loadURLXSV(aboutCtrl.XSVURL)">
                 Load
               </button>
             </span>
@@ -184,7 +169,7 @@
           <div
             ngf-drop
             ngf-select
-            ng-model="c.fileXSV"
+            ng-model="aboutCtrl.fileXSV"
             class="drop-box"
             ngf-drag-over-class="'dragover'"
             ngf-multiple="false"
@@ -199,48 +184,48 @@
         </div>
       </div>
 
-      <div class="row" ng-hide="!c.sourceXSV">
+      <div class="row" ng-hide="!aboutCtrl.sourceXSV">
         <div class="col-xs-12">
           <button
             type="button"
             class="btn btn-xs btn-primary btn-block"
-            ng-model="c.showXSVSource"
+            ng-model="aboutCtrl.showXSVSource"
             uib-btn-checkbox>
             <span class="pull-left glyphicon"
-              ng-class="c.showXSVSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+              ng-class="aboutCtrl.showXSVSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
               aria-hidden="true">
             </span>
-            Source XSV: <b>{{c.titleXSV}}</b>
+            Source XSV: <b>{{aboutCtrl.titleXSV}}</b>
           </button>
 
           <div
             class="pre-scrollable"
-            ng-if="c.showXSVSource">
-            <pre><code>{{c.sourceXSV}}</code></pre>
+            ng-if="aboutCtrl.showXSVSource">
+            <pre><code>{{aboutCtrl.sourceXSV}}</code></pre>
           </div>
         </div>
       </div>
 
-      <div class="row" ng-hide="!c.sourceXSV">
+      <div class="row" ng-hide="!aboutCtrl.sourceXSV">
         <div class="col-xs-12">
           <button
             type="button"
             class="btn btn-xs btn-primary btn-block"
-            ng-model="c.showXSVParsed"
+            ng-model="aboutCtrl.showXSVParsed"
             uib-btn-checkbox>
             <span class="pull-left glyphicon"
-              ng-class="c.showXSVParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+              ng-class="aboutCtrl.showXSVParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
               aria-hidden="true">
             </span>
-            Parsed XSV: <b>{{c.titleXSV}}</b>
+            Parsed XSV: <b>{{aboutCtrl.titleXSV}}</b>
           </button>
 
           <div
-            ng-hide="!c.showXSVParsed">
+            ng-hide="!aboutCtrl.showXSVParsed">
             <div
               id="XSVParsed"
               class="table-container XSVParsed">
-              <json-formatter json="c.parsedXSV" open="2">
+              <json-formatter json="aboutCtrl.parsedXSV" open="2">
               </json-formatter>
             </div>
           </div>
@@ -250,7 +235,7 @@
           <div class="col-xs-12">
             <div
               id="grid1"
-              ui-grid="c.gridOptions"
+              ui-grid="aboutCtrl.gridOptions"
               ui-grid-edit
               ui-grid-cellNav
               ui-grid-resize-columns
@@ -261,18 +246,18 @@
           </div>
 
           <h6>
-            <strong>Last Cell Edited:</strong> {{c.lastCellEdited}}
-            {{c.gridApi.cellNav.getFocusedCell().row.entity[c.gridApi.cellNav.getFocusedCell().col.colDef.name]}}
+            <strong>Last Cell Edited:</strong> {{aboutCtrl.lastCellEdited}}
+            {{aboutCtrl.gridApi.cellNav.getFocusedCell().row.entity[aboutCtrl.gridApi.cellNav.getFocusedCell().col.colDef.name]}}
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            {{c.gridApi.cellNav.getFocusedCell().col.colDef.name}}
+            {{aboutCtrl.gridApi.cellNav.getFocusedCell().col.colDef.name}}
           </h6>
 
         </div>
       </div>
 
-      <div class="row" ng-if="c.errorMessageXSV">
+      <div class="row" ng-if="aboutCtrl.errorMessageXSV">
         <div class="col-xs-12">
-          <pre>{{c.errorMessageXSV}}</pre>
+          <pre>{{aboutCtrl.errorMessageXSV}}</pre>
         </div>
       </div>
 
@@ -289,7 +274,7 @@
               <a
                 type="button"
                 target="_blank"
-                ng-click="c.exportCSV()"
+                ng-click="aboutCtrl.exportCSV()"
                 class="btn btn-xs btn-success btn-block">
                 <i class="glyphicon glyphicon-save-file"></i>
                 Export CSV
@@ -299,7 +284,7 @@
               <a
                 type="button"
                 target="_blank"
-                ng-click="c.exportTSV()"
+                ng-click="aboutCtrl.exportTSV()"
                 class="btn btn-xs btn-success btn-block">
                 <i class="glyphicon glyphicon-save-file"></i>
                 Export TSV
@@ -363,5 +348,5 @@
       </div>
     </script>
 
-  </body>
-</html>
+
+</div>

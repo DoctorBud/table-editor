@@ -1,17 +1,18 @@
 import homeComponent from './home.component';
 
 export default app => {
-  app.config(($stateProvider, $urlRouterProvider) => {
+  app.config(['$stateProvider', '$urlRouterProvider',
+    ($stateProvider, $urlRouterProvider) => {
     $urlRouterProvider.otherwise('/');
 
     $stateProvider
       .state('home', {
         url: '/',
-        template: '<home></home>' //Essentially Treats the Home Directive as the Route View.
+        template: '<home></home>' // Essentially Treats the Home Directive as the Route View.
       });
-  }).directive('home', homeComponent);
+  }]).directive('home', homeComponent);
 
   if (ENVIRONMENT === 'test') {
     require('./home.test.js');
   }
-}
+};

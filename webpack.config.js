@@ -12,12 +12,14 @@ var bs = path.join(__dirname, 'node_modules/bootstrap');
 var uigrid = path.join(__dirname, 'node_modules/angular-ui-grid');
 
 var production = process.env.BUILD === 'production';
+var debugMode = true;
 
 var useComponents = process.env.USE_COMPONENTS;
 
 var entryFile = (useComponents ? './index.js' : './app.js');
-var outputPath = (useComponents ? app : dist);
-var outputFile = (useComponents ? './bundle.js' : './table-editor.js');
+var outputPath = dist;  // (useComponents ? app : dist);
+var outputFile = './bundle.js'; // (useComponents ? './bundle.js' : './table-editor.js');
+var indexFile = (useComponents ? 'cindex.html' : 'index.html');
 
 var config = {
   context: app,
@@ -55,7 +57,13 @@ var config = {
 
       {
         test: /\.scss$/,
-        loader: 'style!css!sass?includePaths[]=' + bourbon
+        // loader: 'style!css!sass?includePaths[]=' + bourbon
+        loaders: [
+          'style-loader',
+          'css-loader?importLoaders=1?includePaths[]=' + bourbon,
+          'postcss-loader?includePaths[]=' + bourbon,
+          'sass-loader?includePaths[]=' + bourbon
+        ]
       },
 
       {
@@ -100,19 +108,18 @@ var config = {
   },
 };
 
-if (!useComponents) {
-  config.plugins.push(
-    new CopyWebpackPlugin([
-        { from: '../README.md' },
-        { from: '../examples', to: 'examples' }
-    ]));
-  config.plugins.push(
-    new HtmlWebpackPlugin({
-      template: path.join(app, 'index.html'),
-      inject: 'head',
-      baseUrl: '/'
-    }));
-}
+config.plugins.push(
+  new CopyWebpackPlugin([
+      { from: '../README.md' },
+      { from: '../examples', to: 'examples' }
+  ]));
+
+config.plugins.push(
+  new HtmlWebpackPlugin({
+    template: path.join(app, indexFile),
+    inject: 'head',
+    baseUrl: '/'
+  }));
 
 switch (nodeEnvironment) {
   case 'production':
@@ -121,12 +128,13 @@ switch (nodeEnvironment) {
       // Minify all javascript, switch loaders to minimizing mode
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: false,
-        // mangle: false,
-        mangle: {
-          // except: ['$', '$scope', '$compile', '$timeout', '$rootScope', '$http',
-          //           '$rootScopeProvider',
-          //           '$location', '$state', '$q']
-        },
+        mangle: debugMode ?
+                  false :
+                  {
+                    // except: ['$', '$scope', '$compile', '$timeout', '$rootScope', '$http',
+                    //           '$rootScopeProvider',
+                    //           '$location', '$state', '$q']
+                  },
         compress: {
           warnings: false
         }

@@ -1,16 +1,21 @@
-import NavbarModule from './navbar'
-import NavbarController from './navbar.controller';
-import NavbarComponent from './navbar.component';
-import NavbarTemplate from './navbar.html';
+import AboutModule from './about'
+import AboutController from './about.controller';
+import AboutComponent from './about.component';
+import AboutTemplate from './about.html';
 
-describe('Navbar', () => {
-  let $rootScope, makeController;
+describe('About', () => {
+  let $rootScope, $controller, scope, makeController;
 
   beforeEach(window.module('app'));
-  beforeEach(inject((_$rootScope_) => {
+  beforeEach(inject((_$rootScope_, $timeout, $log, $http, $httpBackend, _$controller_) => {
     $rootScope = _$rootScope_;
+    scope = $rootScope.$new();
     makeController = () => {
-      return new NavbarController();
+      let ctrl = _$controller_(AboutController,
+        { $scope: scope
+        });
+
+      return ctrl;
     };
   }));
 
@@ -29,17 +34,17 @@ describe('Navbar', () => {
   describe('Template', () => {
     // template specs
     // tip: use regex to ensure correct bindings are used e.g., {{  }}
-    it('has navbar-brand in template [REMOVE]', () => {
-      expect(NavbarTemplate).to.match(/navbar-brand/g);
+    it('has Source YAML in template', () => {
+      expect(AboutTemplate).to.match(/Source YAML/g);
     });
   });
 
   describe('Component', () => {
     // component/directive specs
-    let component = NavbarComponent();
+    let component = AboutComponent();
 
     it('includes the intended template',() => {
-      expect(component.template).to.equal(NavbarTemplate);
+      expect(component.template).to.equal(AboutTemplate);
     });
 
     it('uses `controllerAs` syntax', () => {
@@ -47,7 +52,7 @@ describe('Navbar', () => {
     });
 
     it('invokes the right controller', () => {
-      expect(component.controller).to.equal(NavbarController);
+      expect(component.controller).to.equal(AboutController);
     });
   });
 });

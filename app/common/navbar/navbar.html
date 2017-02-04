@@ -1,3 +1,18 @@
-<nav> 
-  <h1>{{ navBarCtrl.name }} NAV BAR NAV BAR</h1>
+<nav class="navbar xnavbar-inverse" role="navigation">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#">Brand</a>
+  </div>
+
+  <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'">
+    <ul class="nav navbar-nav">
+      <li><a ui-sref="home" ng-click='navCollapsed = true'>Home</a></li>
+      <li><a ui-sref="about" ng-click='navCollapsed = true'>About</a></li>
+    </ul>
+  </div>
 </nav>
