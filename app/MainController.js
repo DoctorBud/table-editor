@@ -55,6 +55,7 @@ class MainController {
 
   // constructor arglist must match invocation in app.js
   constructor($scope, $resource, $http, $timeout, $location, uiGridConstants, uiGridEditConstants) {
+    this.name = 'Bogus property for unit testing';
     this.$scope = $scope;
     this.$resource = $resource;
     this.$http = $http;

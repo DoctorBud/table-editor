@@ -1,4 +1,11 @@
 import ng from 'angular';
+
+/* global ENVIRONMENT */
+if (ENVIRONMENT === 'test') {
+  console.log('ENV:', ENVIRONMENT);
+  require('angular-mocks/angular-mocks');
+}
+
 import ngsanitize from 'angular-sanitize';
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import nguibootstrap from 'angular-ui-bootstrap';
@@ -58,3 +65,9 @@ app.config( ['$provide', function ($provide) {
 app.config(['JSONFormatterConfigProvider', function (JSONFormatterConfigProvider) {
     JSONFormatterConfigProvider.hoverPreviewEnabled = true;
   }]);
+
+
+if (ENVIRONMENT === 'test') {
+  require('./app.test.js');
+}
+
