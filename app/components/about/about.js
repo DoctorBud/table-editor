@@ -10,7 +10,7 @@ export default app => {
         url: '/about',
         template: '<about></about>' // Essentially Treats the About Directive as the Route View.
       });
-  }]).directive('about', aboutComponent);
+  }]).component('about', aboutComponent);
 
   if (ENVIRONMENT === 'test') {
     require('./about.test.js');

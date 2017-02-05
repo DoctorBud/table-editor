@@ -1,8 +1,7 @@
 import template from './hero.html';
 import controller from './hero.controller';
 
-let heroComponent = function () {
-  return {
+let heroComponent = {
     restrict: 'E',
     scope: {},
     template,
@@ -10,6 +9,5 @@ let heroComponent = function () {
     controllerAs: 'heroCtrl',
     bindToController: true
   };
-};
 
 export default heroComponent;

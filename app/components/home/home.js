@@ -10,7 +10,7 @@ export default app => {
         url: '/',
         template: '<home></home>' // Essentially Treats the Home Directive as the Route View.
       });
-  }]).directive('home', homeComponent);
+  }]).component('home', homeComponent);
 
   if (ENVIRONMENT === 'test') {
     require('./home.test.js');

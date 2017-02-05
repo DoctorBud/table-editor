@@ -7,7 +7,7 @@
     "build": "rm -f docs/*.* && BUILD=production node_modules/.bin/webpack --bail && cp docs/index.html docs/404.html",
     "cbuild": "rm -f docs/*.* && BUILD=production USE_COMPONENTS=1 node_modules/.bin/webpack --bail && cp docs/index.html docs/404.html",
     "dev": "(sleep 5 && open 'http://localhost:8080/webpack-dev-server/table-editor' &) && BUILD=development webpack-dev-server --history-api-fallback  --inline --progress --colors",
-    "cdev": "(sleep 5 && open 'http://localhost:8080/webpack-dev-server/cindex.html' &) && BUILD=development USE_COMPONENTS=1 webpack-dev-server --devtool=source-map --progress --colors --content-base app",
+    "cdev": "(sleep 5 && open 'http://localhost:8080/webpack-dev-server/' &) && BUILD=development USE_COMPONENTS=1 webpack-dev-server --devtool=source-map --progress --colors --content-base app",
     "test": "export BUILD=test && karma start",
     "ctest": "export BUILD=test && USE_COMPONENTS=1 karma start",
     "NEWbuild": "export BUILD=production && node node_modules/.bin/webpack && cp app/index.html dist/index.html"
