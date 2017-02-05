@@ -1,7 +1,9 @@
-// Imports will go here to import other components style. 
+// Imports will go here to import other components style.
 // This allows for sharing of global variables.
 @import 'bourbon';
-@import "~components/hero/hero.scss";
-@import "~components/about/about.scss";
-@import "~components/home/home.scss";
-@import "~common/navbar/navbar.scss";
+
+@import "~widgets/hero/hero.scss";
+@import "~widgets/navbar/navbar.scss";
+
+@import "~views/editor/editor.scss";
+@import "~views/home/home.scss";

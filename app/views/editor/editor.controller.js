@@ -16,7 +16,7 @@ if (!String.prototype.endsWith) {
   };
 }
 
-export default class AboutController {
+export default class EditorController {
   getTerm(val) {
     return this.$http.get(
       'https://monarchinitiative.org/autocomplete/' + val + '.json',
@@ -54,7 +54,11 @@ export default class AboutController {
   }
 
   // constructor arglist must match invocation in app.js
-  constructor($scope, $resource, $http, $timeout, $location, uiGridConstants, uiGridEditConstants) {
+  constructor($scope, $resource, $http, $timeout, $location, uiGridConstants, uiGridEditConstants, session) {
+    console.log('session', session);
+    console.log('session.name', session.name);
+    session.sayHello();
+
     this.name = 'Bogus property for unit testing';
     this.$scope = $scope;
     this.$resource = $resource;
@@ -123,7 +127,7 @@ export default class AboutController {
   continueInitialization() {
     var that = this;
 
-    this.$scope.$watch('aboutCtrl.fileYAML', function () {
+    this.$scope.$watch('editorCtrl.fileYAML', function () {
       that.loadFileYAML(that.fileYAML);
     });
 
@@ -140,7 +144,7 @@ export default class AboutController {
       that.loadURLYAML(that.defaultYAMLURL);
     }
 
-    this.$scope.$watch('aboutCtrl.fileXSV', function () {
+    this.$scope.$watch('editorCtrl.fileXSV', function () {
       that.loadFileXSV(that.fileXSV);
     });
 
@@ -478,6 +482,6 @@ export default class AboutController {
 }
 
 
-AboutController.$inject = ['$scope', '$resource', '$http', '$timeout', '$location',
-                          'uiGridConstants', 'uiGridEditConstants'];
+EditorController.$inject = ['$scope', '$resource', '$http', '$timeout', '$location',
+                          'uiGridConstants', 'uiGridEditConstants', 'session'];
 

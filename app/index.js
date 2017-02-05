@@ -2,7 +2,6 @@
 import angular from 'angular';
 import angularUIRouter from 'angular-ui-router';
 
-
 import ngsanitize from 'angular-sanitize';
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import nguibootstrap from 'angular-ui-bootstrap';
@@ -16,10 +15,9 @@ import ngGrid from './ui-grid-patched.min.js';
 import '../node_modules/angular-ui-grid/ui-grid.min.css';
 require('./style.css');
 
-
-import appComponents from './components/components.js';
-import commonComponents from './common/components.js';
-import appServices from './services/services.js';
+import views from './views/views.js';
+import widgets from './widgets/widgets.js';
+import services from './services/services.js';
 import appConfiguration from './app.config';
 
 // Single Style Entry Point
@@ -38,13 +36,13 @@ var dependentModules = [angularUIRouter, nguibootstrap, ngsanitize, ngResource, 
 const app = angular.module('app', dependentModules);
 
 // Components Entrypoint
-appComponents(app);
+views(app);
 
 // Common Components Entrypoint
-commonComponents(app);
+widgets(app);
 
 // App Services Entrypoint
-appServices(app);
+services(app);
 
 // Router Configuration
 // Components must be declared first since

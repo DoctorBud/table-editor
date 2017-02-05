@@ -1,9 +1,9 @@
-import AboutModule from './about'
-import AboutController from './about.controller';
-import AboutComponent from './about.component';
-import AboutTemplate from './about.html';
+import EditorModule from './editor';
+import EditorController from './editor.controller';
+import EditorComponent from './editor.component';
+import EditorTemplate from './editor.html';
 
-describe('About', () => {
+describe('Editor', () => {
   let $rootScope, $controller, scope, makeController;
 
   beforeEach(window.module('app'));
@@ -11,7 +11,7 @@ describe('About', () => {
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     makeController = () => {
-      let ctrl = _$controller_(AboutController,
+      let ctrl = _$controller_(EditorController,
         { $scope: scope
         });
 
@@ -35,16 +35,16 @@ describe('About', () => {
     // template specs
     // tip: use regex to ensure correct bindings are used e.g., {{  }}
     it('has Source YAML in template', () => {
-      expect(AboutTemplate).to.match(/Source YAML/g);
+      expect(EditorTemplate).to.match(/Source YAML/g);
     });
   });
 
   describe('Component', () => {
     // component/directive specs
-    let component = AboutComponent();
+    let component = EditorComponent();
 
     it('includes the intended template',() => {
-      expect(component.template).to.equal(AboutTemplate);
+      expect(component.template).to.equal(EditorTemplate);
     });
 
     it('uses `controllerAs` syntax', () => {
@@ -52,7 +52,7 @@ describe('About', () => {
     });
 
     it('invokes the right controller', () => {
-      expect(component.controller).to.equal(AboutController);
+      expect(component.controller).to.equal(EditorController);
     });
   });
 });

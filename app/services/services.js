@@ -1,5 +1,5 @@
-import usersService from './users/users';
+import sessionService from './session/session';
 
 export default app => {
-  INCLUDE_ALL_MODULES([usersService], app);
+  INCLUDE_ALL_MODULES([sessionService], app);
 }
