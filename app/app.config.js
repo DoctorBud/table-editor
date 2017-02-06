@@ -21,12 +21,12 @@ export default app => {
   // angular router, which I am not currently using.
   // $location works, but when it rewrites the URL it unnecessarily URIencodes it, which is undesirable.
   //
-  // app.config(['$locationProvider', function config($locationProvider) {
-    // $locationProvider.html5Mode({
-    //   enabled: true,
-    //   requireBase: true
-    // });
-  // }]);
+  app.config(['$locationProvider', function config($locationProvider) {
+    $locationProvider.html5Mode({
+      enabled: true,
+      requireBase: true
+    }).hashPrefix('!');
+  }]);
 
   app.config(['JSONFormatterConfigProvider', function (JSONFormatterConfigProvider) {
       JSONFormatterConfigProvider.hoverPreviewEnabled = true;

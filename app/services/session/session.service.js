@@ -4,7 +4,7 @@ class SessionService {
   }
 
   sayHello() {
-    console.log('hello');
+    console.log('Hello from SessionService');
   }
 }
 

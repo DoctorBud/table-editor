@@ -55,10 +55,6 @@ export default class EditorController {
 
   // constructor arglist must match invocation in app.js
   constructor($scope, $resource, $http, $timeout, $location, uiGridConstants, uiGridEditConstants, session) {
-    console.log('session', session);
-    console.log('session.name', session.name);
-    session.sayHello();
-
     this.name = 'Bogus property for unit testing';
     this.$scope = $scope;
     this.$resource = $resource;
@@ -130,29 +126,21 @@ export default class EditorController {
     this.$scope.$watch('editorCtrl.fileYAML', function () {
       that.loadFileYAML(that.fileYAML);
     });
-
-    var search = window.location.search;
-    // console.log('window.location', window.location);
-    // console.log('search', search);
-    var yamlPrefix = '?yaml=';
-    if (search && search.indexOf(yamlPrefix) === 0) {
-      search = search.slice(yamlPrefix.length);
-      // console.log('searchurl', search);
-      that.loadURLYAML(search);
-    }
-    else if (that.defaultYAMLURL) {
-      that.loadURLYAML(that.defaultYAMLURL);
-    }
-
     this.$scope.$watch('editorCtrl.fileXSV', function () {
       that.loadFileXSV(that.fileXSV);
     });
 
-    var xsvPrefix = '?xsv=';
-    if (search && search.indexOf(xsvPrefix) === 0) {
-      search = search.slice(xsvPrefix.length);
-      // console.log('searchurl', search);
-      that.loadURLXSV(search);
+    var searchParams = this.$location.search();
+    if (searchParams.url) {
+      var url = searchParams.url;
+      that.loadURLYAML(url);
+    }
+    else if (that.defaultYAMLURL) {
+      that.loadURLYAML(that.defaultYAMLURL);
+    }
+    if (searchParams.xsv) {
+      var xsv = searchParams.xsv;
+      that.loadURLXSV(xsv);
     }
     else if (that.defaultXSVURL) {
       that.loadURLXSV(that.defaultXSVURL);
@@ -184,7 +172,7 @@ export default class EditorController {
   loadSourceYAML(source, title, url) {
     this.sourceYAML = source;
     this.titleYAML = title;
-    // this.YAMLURL = url;
+    this.YAMLURL = url;
     this.errorMessage = null;
     if (url) {
       var hash = '?yaml=' + url;
@@ -192,13 +180,12 @@ export default class EditorController {
                     // window.location.host +
                     window.location.pathname +
                     hash;
-      // console.log('newURL:', newURL);
-      var stateObj = window.history.state;
-      // window.history.replaceState(stateObj, title, newURL);
-      // this.$location.search({url: url});
+      var search = this.$location.search();
+      search.url = url;
+      this.$location.search(search);
     }
     else {
-      // window.history.replaceState(stateObj, title, window.location.pathname);
+      this.$location.search({});
     }
     this.parseYAML();
   }
@@ -208,11 +195,9 @@ export default class EditorController {
     this.YAMLURL = YAMLURL;
     this.$http.get(YAMLURL, {withCredentials: false}).then(
       function(result) {
-        // console.log('loadURLYAML success', result.data);
         that.loadSourceYAML(result.data, YAMLURL, YAMLURL);
       },
       function(error) {
-        console.log('loadURLYAML error', error);
         that.setErrorYAML('Error loading URL ' + YAMLURL + '\n\n' + JSON.stringify(error));
       }
     );
@@ -321,7 +306,7 @@ export default class EditorController {
   loadSourceXSV(source, title, url) {
     this.sourceXSV = source;
     this.titleXSV = title;
-    // this.XSVURL = url;
+    this.XSVURL = url;
     this.errorMessage = null;
     if (url) {
       var hash = '?xsv=' + url;
@@ -329,13 +314,12 @@ export default class EditorController {
                     // window.location.host +
                     window.location.pathname +
                     hash;
-      // console.log('newURL:', newURL);
-      var stateObj = window.history.state;
-      // window.history.replaceState(stateObj, title, newURL);
-      // this.$location.search({url: url});
+      var search = this.$location.search();
+      search.xsv = url;
+      this.$location.search(search);
     }
     else {
-      // window.history.replaceState(stateObj, title, window.location.pathname);
+      this.$location.search({});
     }
     this.parseXSV();
   }
@@ -345,7 +329,6 @@ export default class EditorController {
     this.XSVURL = XSVURL;
     this.$http.get(XSVURL, {withCredentials: false}).then(
       function(result) {
-        // console.log('loadURLXSV success', result.data);
         that.loadSourceXSV(result.data, XSVURL, XSVURL);
       },
       function(error) {
