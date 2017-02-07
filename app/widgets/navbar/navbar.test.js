@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import NavbarModule from './navbar'
 import NavbarController from './navbar.controller';
 import NavbarComponent from './navbar.component';
@@ -20,7 +22,7 @@ describe('Navbar', () => {
 
   describe('Controller', () => {
     // controller specs
-    it('has a name property [REMOVE]', () => { // erase if removing this.name from the controller
+    it('has a name propertyhelp', () => { // erase if removing this.name from the controller
       let controller = makeController();
       expect(controller).to.have.property('name');
     });
@@ -29,14 +31,14 @@ describe('Navbar', () => {
   describe('Template', () => {
     // template specs
     // tip: use regex to ensure correct bindings are used e.g., {{  }}
-    it('has navbar-brand in template [REMOVE]', () => {
+    it('has navbar-brand in templatehelp', () => {
       expect(NavbarTemplate).to.match(/navbar-brand/g);
     });
   });
 
   describe('Component', () => {
     // component/directive specs
-    let component = NavbarComponent();
+    let component = NavbarComponent;
 
     it('includes the intended template',() => {
       expect(component.template).to.equal(NavbarTemplate);

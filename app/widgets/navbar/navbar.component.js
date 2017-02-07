@@ -1,15 +1,11 @@
 import template from './navbar.html';
 import controller from './navbar.controller';
+import 'file!./INCA.png';
 
-let navbarComponent = function () {
-  return {
-    restrict: 'E',
-    scope: {},
-    template,
-    controller,
-    controllerAs: 'navBarCtrl',
-    bindToController: true
-  };
+let navbarComponent = {
+  template: template,
+  controller: controller,
+  controllerAs: 'navBarCtrl'
 };
 
 export default navbarComponent;

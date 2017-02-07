@@ -3,7 +3,6 @@ import angular from 'angular';
 import angularUIRouter from 'angular-ui-router';
 
 import ngsanitize from 'angular-sanitize';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
 import nguibootstrap from 'angular-ui-bootstrap';
 import ngResource from 'angular-resource';
 import ngFileUpload from 'ng-file-upload';

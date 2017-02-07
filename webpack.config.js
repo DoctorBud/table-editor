@@ -1,5 +1,4 @@
 var webpack = require('webpack');
-var bourbon = require('node-bourbon').includePaths;
 var _ = require('lodash');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -9,6 +8,7 @@ var nodeEnvironment = process.env.BUILD;
 var dist = path.join(__dirname, 'docs');
 var app = path.join(__dirname, 'app');
 var bs = path.join(__dirname, 'node_modules/bootstrap');
+var bss = path.join(__dirname, 'node_modules/bootstrap-sass');
 var uigrid = path.join(__dirname, 'node_modules/angular-ui-grid');
 
 var production = process.env.BUILD === 'production';
@@ -57,12 +57,12 @@ var config = {
 
       {
         test: /\.scss$/,
-        // loader: 'style!css!sass?includePaths[]=' + bourbon
+        // loader: 'style!css!sass?includePaths[]=' + bootstrap
         loaders: [
           'style-loader',
-          'css-loader?importLoaders=1?includePaths[]=' + bourbon,
-          'postcss-loader?includePaths[]=' + bourbon,
-          'sass-loader?includePaths[]=' + bourbon
+          'css-loader?importLoaders=1',
+          'postcss-loader',
+          'sass-loader'
         ]
       },
 
@@ -87,7 +87,7 @@ var config = {
       {
         test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|txt|ico)$/,
         loader: 'file',
-        include: [bs, uigrid]
+        include: [bs, bss, uigrid, app]
       },
 
       {
@@ -104,7 +104,8 @@ var config = {
 
   devServer: {
     inline: false,
-    contentBase: dist
+    contentBase: dist,
+    historyApiFallback: true
   },
 };
 

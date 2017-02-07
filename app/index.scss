@@ -1,9 +1,20 @@
-// Imports will go here to import other components style.
-// This allows for sharing of global variables.
-@import 'bourbon';
+// Bootstrap Overrides
 
-@import "~widgets/hero/hero.scss";
+$icon-font-path: "~bootstrap-sass/assets/fonts/bootstrap/";
+
+$navbar-height:    			30px;
+$navbar-padding-vertical:  	2;
+
+$nav-link-padding: 		0 12px;
+$navbar-border-radius: 	0;
+$navbar-margin-bottom:  0;
+
+@import "~bootstrap-sass/assets/stylesheets/bootstrap";
+
+// App
+
+@import "~widgets/help/help.scss";
 @import "~widgets/navbar/navbar.scss";
 
 @import "~views/editor/editor.scss";
-@import "~views/home/home.scss";
+@import "~views/settings/settings.scss";

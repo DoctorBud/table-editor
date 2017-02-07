@@ -7,10 +7,12 @@ export default app => {
 
     $stateProvider
       .state('editor', {
-        url: '/editor',
+        url: '/',
         template: '<editor></editor>' // Essentially Treats the Editor Directive as the Route View.
       });
-  }]).component('editor', editorComponent);
+  }]);
+
+  app.component('editor', editorComponent);
 
   if (ENVIRONMENT === 'test') {
     require('./editor.test.js');

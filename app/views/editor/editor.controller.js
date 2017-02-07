@@ -1,4 +1,5 @@
 /* global angular */
+
 import _ from 'lodash';
 import yaml from 'js-yaml';
 import Papa from 'papaparse';

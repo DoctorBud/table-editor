@@ -1,6 +1,6 @@
 import navbarComponent from './navbar/navbar';
-import heroComponent from './hero/hero';
+import helpComponent from './help/help';
 
 export default app => {
-  INCLUDE_ALL_MODULES([navbarComponent, heroComponent], app);
+  INCLUDE_ALL_MODULES([navbarComponent, helpComponent], app);
 };

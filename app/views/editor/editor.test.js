@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import EditorModule from './editor';
 import EditorController from './editor.controller';
 import EditorComponent from './editor.component';
@@ -25,7 +27,7 @@ describe('Editor', () => {
 
   describe('Controller', () => {
     // controller specs
-    it('has a name property [REMOVE]', () => { // erase if removing this.name from the controller
+    it('has a name propertyhelp', () => { // erase if removing this.name from the controller
       let controller = makeController();
       expect(controller).to.have.property('name');
     });
@@ -41,7 +43,7 @@ describe('Editor', () => {
 
   describe('Component', () => {
     // component/directive specs
-    let component = EditorComponent();
+    let component = EditorComponent;
 
     it('includes the intended template',() => {
       expect(component.template).to.equal(EditorTemplate);

@@ -1,16 +1,18 @@
-import HeroModule from './hero'
-import HeroController from './hero.controller';
-import HeroComponent from './hero.component';
-import HeroTemplate from './hero.html';
+/* eslint-disable */
 
-describe('Hero', () => {
+import SettingsModule from './settings'
+import SettingsController from './settings.controller';
+import SettingsComponent from './settings.component';
+import SettingsTemplate from './settings.html';
+
+describe('Settings', () => {
   let $rootScope, makeController;
 
   beforeEach(window.module('app'));
   beforeEach(inject((_$rootScope_) => {
     $rootScope = _$rootScope_;
     makeController = () => {
-      return new HeroController();
+      return new SettingsController();
     };
   }));
 
@@ -20,7 +22,7 @@ describe('Hero', () => {
 
   describe('Controller', () => {
     // controller specs
-    it('has a name property [REMOVE]', () => { // erase if removing this.name from the controller
+    it('has a name propertyhelp', () => { // erase if removing this.name from the controller
       let controller = makeController();
       expect(controller).to.have.property('name');
     });
@@ -29,17 +31,17 @@ describe('Hero', () => {
   describe('Template', () => {
     // template specs
     // tip: use regex to ensure correct bindings are used e.g., {{  }}
-    it('has name in template [REMOVE]', () => {
-      expect(HeroTemplate).to.match(/{{\s?[a-zA-Z]+Ctrl\.name\s?}}/g);
+    it('has class="settings" in template', () => {
+      expect(SettingsTemplate).to.match(/class="settings"/g);
     });
   });
 
   describe('Component', () => {
     // component/directive specs
-    let component = HeroComponent();
+    let component = SettingsComponent;
 
     it('includes the intended template',() => {
-      expect(component.template).to.equal(HeroTemplate);
+      expect(component.template).to.equal(SettingsTemplate);
     });
 
     it('uses `controllerAs` syntax', () => {
@@ -47,7 +49,7 @@ describe('Hero', () => {
     });
 
     it('invokes the right controller', () => {
-      expect(component.controller).to.equal(HeroController);
+      expect(component.controller).to.equal(SettingsController);
     });
   });
 });

@@ -1,16 +1,18 @@
-import HomeModule from './home'
-import HomeController from './home.controller';
-import HomeComponent from './home.component';
-import HomeTemplate from './home.html';
+/* eslint-disable */
 
-describe('Home', () => {
+import HelpModule from './help';
+import HelpController from './help.controller';
+import HelpComponent from './help.component';
+import HelpTemplate from './help.html';
+
+describe('Help', () => {
   let $rootScope, makeController;
 
   beforeEach(window.module('app'));
   beforeEach(inject((_$rootScope_) => {
     $rootScope = _$rootScope_;
     makeController = () => {
-      return new HomeController();
+      return new HelpController();
     };
   }));
 
@@ -20,7 +22,7 @@ describe('Home', () => {
 
   describe('Controller', () => {
     // controller specs
-    it('has a name property [REMOVE]', () => { // erase if removing this.name from the controller
+    it('has a name propertyhelp', () => { // erase if removing this.name from the controller
       let controller = makeController();
       expect(controller).to.have.property('name');
     });
@@ -29,17 +31,17 @@ describe('Home', () => {
   describe('Template', () => {
     // template specs
     // tip: use regex to ensure correct bindings are used e.g., {{  }}
-    it('has name in template [REMOVE]', () => {
-      expect(HomeTemplate).to.match(/{{\s?[a-zA-Z]+Ctrl\.name\s?}}/g);
+    it('has GitHub Source in template', () => {
+      expect(HelpTemplate).to.match(/GitHub Source/g);
     });
   });
 
   describe('Component', () => {
     // component/directive specs
-    let component = HomeComponent();
+    let component = HelpComponent;
 
     it('includes the intended template',() => {
-      expect(component.template).to.equal(HomeTemplate);
+      expect(component.template).to.equal(HelpTemplate);
     });
 
     it('uses `controllerAs` syntax', () => {
@@ -47,7 +49,7 @@ describe('Home', () => {
     });
 
     it('invokes the right controller', () => {
-      expect(component.controller).to.equal(HomeController);
+      expect(component.controller).to.equal(HelpController);
     });
   });
 });
