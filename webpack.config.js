@@ -14,12 +14,10 @@ var uigrid = path.join(__dirname, 'node_modules/angular-ui-grid');
 var production = process.env.BUILD === 'production';
 var debugMode = true;
 
-var useComponents = process.env.USE_COMPONENTS;
-
-var entryFile = (useComponents ? './index.js' : './app.js');
-var outputPath = dist;  // (useComponents ? app : dist);
-var outputFile = './bundle.js'; // (useComponents ? './bundle.js' : './table-editor.js');
-var indexFile = (useComponents ? 'cindex.html' : 'index.html');
+var entryFile = './app.js';
+var outputPath = dist;
+var outputFile = './bundle.js';
+var indexFile = 'index.html';
 
 var config = {
   context: app,
@@ -149,9 +147,7 @@ switch (nodeEnvironment) {
 
     config.entry = {
       bundle: entryFile,
-      vendor: (useComponents ?
-                      ['angular', 'angular-ui-router', 'lodash'] :
-                      ['angular', 'lodash'])
+      vendor: ['angular', 'angular-ui-router', 'lodash']
     };
     config.devtool = 'source-map';
     break;

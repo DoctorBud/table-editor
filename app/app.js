@@ -1,4 +1,25 @@
-import ng from 'angular';
+// Angular & Router ES6 Imports
+import angular from 'angular';
+import angularUIRouter from 'angular-ui-router';
+
+import ngsanitize from 'angular-sanitize';
+import nguibootstrap from 'angular-ui-bootstrap';
+import ngResource from 'angular-resource';
+import ngFileUpload from 'ng-file-upload';
+import jsonformatter from 'jsonformatter';
+import jsonformatterCSS from 'jsonformatter/dist/json-formatter.min.css';
+
+import ngGrid from './ui-grid-patched.min.js';
+import '../node_modules/angular-ui-grid/ui-grid.min.css';
+require('./style.css');
+
+import views from './views/views.js';
+import widgets from './widgets/widgets.js';
+import services from './services/services.js';
+import appConfiguration from './app.config';
+
+// Single Style Entry Point
+import './index.scss';
 
 /* global ENVIRONMENT */
 if (ENVIRONMENT === 'test') {
@@ -6,68 +27,22 @@ if (ENVIRONMENT === 'test') {
   require('angular-mocks/angular-mocks');
 }
 
-import ngsanitize from 'angular-sanitize';
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
-import nguibootstrap from 'angular-ui-bootstrap';
-import ngResource from 'angular-resource';
-import ngFileUpload from 'ng-file-upload';
-import MainController from './MainController.js';
-import jsonformatter from 'jsonformatter';
-import jsonformatterCSS from 'jsonformatter/dist/json-formatter.min.css';
-
-//
-// Angular 1.6 and ui-grid don't play well, so I have a patched version until ui-grid gets fixed,
-// which should be soon.
-// PR here: https://github.com/angular-ui/ui-grid/pull/5949
-// Using this patch: https://github.com/dominusbelial/ui-grid-5890-fix
-//
-// import ngGrid from 'angular-ui-grid';
-import ngGrid from './ui-grid-patched.min.js';
-import '../node_modules/angular-ui-grid/ui-grid.min.css';
-
-require('./style.css');
-
-var dependentModules = [nguibootstrap, ngsanitize, ngResource, ngFileUpload, jsonformatter,
+var dependentModules = [angularUIRouter, nguibootstrap, ngsanitize, ngResource, ngFileUpload, jsonformatter,
                         'ui.grid', 'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.cellNav',
-                        'ui.grid.autoResize', 'ui.grid.resizeColumns',
-                        MainController];
-var app = ng.module('app', dependentModules);
+                        'ui.grid.autoResize', 'ui.grid.resizeColumns'];
 
-app.config(['$httpProvider', function config($httpProvider) {
-  $httpProvider.defaults.withCredentials = true;
-  $httpProvider.defaults.useXDomain = true;
-}]);
+const app = angular.module('app', dependentModules);
 
-app.config( ['$provide', function ($provide) {
-    $provide.decorator('$browser', ['$delegate', function ($delegate) {
-        $delegate.onUrlChange = function(newUrl, newState) {
-        };
-        $delegate.url = function (url) {
-                                      return '';
-                                    };
-        return $delegate;
-    }]);
-}]);
+// Components Entrypoint
+views(app);
 
-//
-// For some reason, $location isn't working properly in changing the URL bar, so
-// I disabled it. I think that $location must be used in conjunction with the
-// angular router, which I am not currently using.
-// $location works, but when it rewrites the URL it unnecessarily URIencodes it, which is undesirable.
-//
-// app.config(['$locationProvider', function config($locationProvider) {
-  // $locationProvider.html5Mode({
-  //   enabled: true,
-  //   requireBase: true
-  // });
-// }]);
+// Common Components Entrypoint
+widgets(app);
 
-app.config(['JSONFormatterConfigProvider', function (JSONFormatterConfigProvider) {
-    JSONFormatterConfigProvider.hoverPreviewEnabled = true;
-  }]);
+// App Services Entrypoint
+services(app);
 
-
-if (ENVIRONMENT === 'test') {
-  require('./app.test.js');
-}
-
+// Router Configuration
+// Components must be declared first since
+// Routes reference controllers that will be bound to route templates.
+appConfiguration(app);

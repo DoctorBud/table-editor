@@ -56,6 +56,7 @@ export default class EditorController {
 
   // constructor arglist must match invocation in app.js
   constructor($scope, $resource, $http, $timeout, $location, uiGridConstants, uiGridEditConstants, session) {
+    var that = this;
     this.name = 'Bogus property for unit testing';
     this.$scope = $scope;
     this.$resource = $resource;
@@ -64,10 +65,6 @@ export default class EditorController {
     this.$location = $location;
     this.uiGridConstants = uiGridConstants;
     this.uiGridEditConstants = uiGridEditConstants;
-
-    this.showYAMLSource = false;
-    this.showYAMLParsed = false;
-    this.setErrorYAML(null);
     this.examplesYAML = [
       {
         url: 'examples/exposure_to_change_in_levels.yaml',
@@ -80,16 +77,6 @@ export default class EditorController {
         type: 'yaml'
       }
     ];
-    this.YAMLURL = null;
-    this.defaultYAMLURL = this.examplesYAML[0].url;
-
-    this.showXSVSource = false;
-    this.showXSVParsed = false;
-    this.sourceXSV = '';
-    this.titleXSV = '';
-    this.exportedXSV = null;
-    this.errorMessageXSV = null;
-    this.setErrorXSV(null);
     this.examplesXSV = [
       {
         url: 'examples/exposure_to_change_in_levels.csv',
@@ -107,63 +94,73 @@ export default class EditorController {
         type: 'tsv'
       }
     ];
-    this.XSVURL = null;
-    this.defaultXSVURL = this.examplesXSV[0].url;
 
-    var that = this;
+    this.session = session;
+    if (session.initialized) {
+      console.log('session.initialized');
+    }
+    else {
+      console.log('!session.initialized');
+      session.showYAMLSource = false;
+      session.showYAMLParsed = false;
+      this.setErrorYAML(null);
+      session.YAMLURL = null;
+      session.defaultYAMLURL = this.examplesYAML[0].url;
+
+      session.showXSVSource = false;
+      session.showXSVParsed = false;
+      session.sourceXSV = '';
+      session.titleXSV = '';
+      session.exportedXSV = null;
+      session.errorMessageXSV = null;
+      this.setErrorXSV(null);
+
+      session.XSVURL = null;
+      session.defaultXSVURL = this.examplesXSV[0].url;
+
+      var searchParams = this.$location.search();
+      if (searchParams.url) {
+        var url = searchParams.url;
+        that.loadURLYAML(url);
+      }
+      else if (that.session.defaultYAMLURL) {
+        that.loadURLYAML(that.session.defaultYAMLURL);
+      }
+      if (searchParams.xsv) {
+        var xsv = searchParams.xsv;
+        that.loadURLXSV(xsv);
+      }
+      else if (that.session.defaultXSVURL) {
+        that.loadURLXSV(that.session.defaultXSVURL);
+      }
+      session.initialized = true;
+    }
+    this.$scope.$watch('editorCtrl.session.fileYAML', function () {
+      that.loadFileYAML(that.session.fileYAML);
+    });
+    this.$scope.$watch('editorCtrl.session.fileXSV', function () {
+      that.loadFileXSV(that.session.fileXSV);
+    });
 
     this.setupGrid();
-
-    $timeout(
-      function () {
-        that.continueInitialization();
-      },
-      10);
-  }
-
-  continueInitialization() {
-    var that = this;
-
-    this.$scope.$watch('editorCtrl.fileYAML', function () {
-      that.loadFileYAML(that.fileYAML);
-    });
-    this.$scope.$watch('editorCtrl.fileXSV', function () {
-      that.loadFileXSV(that.fileXSV);
-    });
-
-    var searchParams = this.$location.search();
-    if (searchParams.url) {
-      var url = searchParams.url;
-      that.loadURLYAML(url);
-    }
-    else if (that.defaultYAMLURL) {
-      that.loadURLYAML(that.defaultYAMLURL);
-    }
-    if (searchParams.xsv) {
-      var xsv = searchParams.xsv;
-      that.loadURLXSV(xsv);
-    }
-    else if (that.defaultXSVURL) {
-      that.loadURLXSV(that.defaultXSVURL);
-    }
   }
 
 
   // YAML stuff
 
   setErrorYAML(error) {
-    this.errorMessageYAML = error;
-    this.titleYAML = '';
-    this.sourceYAML = '';
-    this.parsedYAML = null;
+    this.session.errorMessageYAML = error;
+    this.session.titleYAML = '';
+    this.session.sourceYAML = '';
+    this.session.parsedYAML = null;
   }
 
   parseYAML() {
     var renderElement = document.getElementById('YAMLParsed');
 
     try {
-      var doc = yaml.safeLoad(this.sourceYAML);
-      this.parsedYAML = doc;
+      var doc = yaml.safeLoad(this.session.sourceYAML);
+      this.session.parsedYAML = doc;
     }
     catch (e) {
       console.log('error', e);
@@ -171,10 +168,10 @@ export default class EditorController {
   }
 
   loadSourceYAML(source, title, url) {
-    this.sourceYAML = source;
-    this.titleYAML = title;
-    this.YAMLURL = url;
-    this.errorMessage = null;
+    this.session.sourceYAML = source;
+    this.session.titleYAML = title;
+    this.session.YAMLURL = url;
+    this.session.errorMessage = null;
     if (url) {
       var hash = '?yaml=' + url;
       var newURL =  // window.location.protocol +
@@ -193,7 +190,7 @@ export default class EditorController {
 
   loadURLYAML(YAMLURL) {
     var that = this;
-    this.YAMLURL = YAMLURL;
+    this.session.YAMLURL = YAMLURL;
     this.$http.get(YAMLURL, {withCredentials: false}).then(
       function(result) {
         that.loadSourceYAML(result.data, YAMLURL, YAMLURL);
@@ -232,10 +229,52 @@ export default class EditorController {
 // XSV stuff
 
   setErrorXSV(error) {
-    this.errorMessageXSV = error;
-    this.titleXSV = '';
-    this.sourceXSV = '';
-    this.parsedXSV = null;
+    this.session.errorMessageXSV = error;
+    this.session.titleXSV = '';
+    this.session.sourceXSV = '';
+    this.session.parsedXSV = null;
+  }
+
+  generateColumnDefsFromXSV(fields) {
+    var that = this;
+    var columnDefs = _.map(fields, function(f) {
+      var result = {
+        name: f,
+        field: f,
+        displayName: f,
+        enableCellEdit: false,
+        enableCellEditOnFocus: false
+      };
+
+      if (that.isAutocompleteColumn(f)) {
+        result.enableCellEditOnFocus = true;
+        result.editableCellTemplate = 'cellStateAutocompleteTemplate';
+        result.cellTemplate = 'cellStateTemplate';
+        result.enableCellEdit = true;
+      }
+      else if (that.isEditableColumn(f)) {
+        result.enableCellEditOnFocus = true;
+        result.cellTemplate = 'cellStateTemplate';
+        result.enableCellEdit = true;
+      }
+      else {
+        result.cellTemplate = 'cellStateReadonlyTemplate';
+      }
+
+      return result;
+    });
+
+    return columnDefs;
+  }
+
+  generateRowDataFromXSV(data) {
+    var rowData = _.map(data, function(row) {
+      // Not much going on here; this is just an identity mapping for now
+      // But other types of transformation might be necessary in the future.
+      return row;
+    });
+
+    return rowData;
   }
 
   parseXSV() {
@@ -265,50 +304,23 @@ export default class EditorController {
 
     config.complete = function(results, file) {
       that.$timeout(function() {
-        that.parsedXSV = results; // .data;
-        that.gridOptions.columnDefs = _.map(results.meta.fields, function(f) {
-          var result = {
-            name: f,
-            field: f,
-            displayName: f,
-            enableCellEdit: false,
-            enableCellEditOnFocus: false
-          };
-
-          if (that.isAutocompleteColumn(f)) {
-            result.enableCellEditOnFocus = true;
-            result.editableCellTemplate = 'cellStateAutocompleteTemplate';
-            result.cellTemplate = 'cellStateTemplate';
-            result.enableCellEdit = true;
-          }
-          else if (that.isEditableColumn(f)) {
-            result.enableCellEditOnFocus = true;
-            result.cellTemplate = 'cellStateTemplate';
-            result.enableCellEdit = true;
-          }
-          else {
-            result.cellTemplate = 'cellStateReadonlyTemplate';
-          }
-
-          return result;
-        });
-
-        var data = _.map(results.data, function(row) {
-          return row;
-        });
-        that.gridOptions.data = data;
+        that.session.parsedXSV = results; // .data;
+        that.session.columnDefs = that.generateColumnDefsFromXSV(results.meta.fields);
+        that.session.rowData = that.generateRowDataFromXSV(results.data);
+        that.gridOptions.columnDefs = that.session.columnDefs;
+        that.gridOptions.data = that.session.rowData;
         that.gridApi.core.handleWindowResize();
       }, 0);
     };
 
-    Papa.parse(this.sourceXSV, config);
+    Papa.parse(this.session.sourceXSV, config);
   }
 
   loadSourceXSV(source, title, url) {
-    this.sourceXSV = source;
-    this.titleXSV = title;
-    this.XSVURL = url;
-    this.errorMessage = null;
+    this.session.sourceXSV = source;
+    this.session.titleXSV = title;
+    this.session.XSVURL = url;
+    this.session.errorMessage = null;
     if (url) {
       var hash = '?xsv=' + url;
       var newURL =  // window.location.protocol +
@@ -327,7 +339,7 @@ export default class EditorController {
 
   loadURLXSV(XSVURL) {
     var that = this;
-    this.XSVURL = XSVURL;
+    this.session.XSVURL = XSVURL;
     this.$http.get(XSVURL, {withCredentials: false}).then(
       function(result) {
         that.loadSourceXSV(result.data, XSVURL, XSVURL);
@@ -384,13 +396,13 @@ export default class EditorController {
     // If we are replacing a previously generated file we need to
     // manually revoke the object URL to avoid memory leaks.
     if (this.exportedXSV !== null) {
-      window.URL.revokeObjectURL(this.exportedXSV);
+      window.URL.revokeObjectURL(this.session.exportedXSV);
     }
 
     this.exportedXSV = window.URL.createObjectURL(data);
 
     var link = document.createElement('a');
-    link.href = this.exportedXSV;
+    link.href = this.session.exportedXSV;
     link.download = 'filename.html';
     link.target = '_blank';
     document.body.appendChild(link);  // required in FF, optional for Chrome/Safari
@@ -459,6 +471,10 @@ export default class EditorController {
       });
 
       that.$timeout(function() {
+        if (that.session.columnDefs) {
+          that.gridOptions.columnDefs = that.session.columnDefs;
+          that.gridOptions.data = that.session.rowData;
+        }
         that.gridApi.core.handleWindowResize();
       }, 0);
     };

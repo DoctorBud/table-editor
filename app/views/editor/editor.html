@@ -29,7 +29,7 @@
       <div class="col-xs-6">
         <div class="input-group input-group-sm">
           <input
-            ng-model="editorCtrl.YAMLURL"
+            ng-model="editorCtrl.session.YAMLURL"
             type="text"
             class="form-control input-group-xs"
             placeholder="Enter a URL to a CSV/TSV file"
@@ -38,9 +38,9 @@
           <span class="input-group-btn">
             <button
               type="button"
-              ng-disabled="editorCtrl.YAMLURL.length === 0"
+              ng-disabled="editorCtrl.session.YAMLURL.length === 0"
               class="btn btn-success btn-xs btn-block input-group-button-xs"
-              ng-click="editorCtrl.loadURLYAML(editorCtrl.YAMLURL)">
+              ng-click="editorCtrl.loadURLYAML(editorCtrl.session.YAMLURL)">
               Load
             </button>
           </span>
@@ -50,7 +50,7 @@
         <div
           ngf-drop
           ngf-select
-          ng-model="editorCtrl.fileYAML"
+          ng-model="editorCtrl.session.fileYAML"
           class="drop-box"
           ngf-drag-over-class="'dragover'"
           ngf-multiple="false"
@@ -65,58 +65,58 @@
       </div>
     </div>
 
-    <div class="row" ng-hide="!editorCtrl.sourceYAML">
+    <div class="row" ng-hide="!editorCtrl.session.sourceYAML">
       <div class="col-xs-12">
         <button
           type="button"
           class="btn btn-xs btn-primary btn-block"
-          ng-model="editorCtrl.showYAMLSource"
+          ng-model="editorCtrl.session.showYAMLSource"
           uib-btn-checkbox>
           <span class="pull-left glyphicon"
-            ng-class="editorCtrl.showYAMLSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+            ng-class="editorCtrl.session.showYAMLSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
             aria-hidden="true">
           </span>
-          Source YAML: <b>{{editorCtrl.titleYAML}}</b>
+          Source YAML: <b>{{editorCtrl.session.titleYAML}}</b>
         </button>
 
         <div
           class="pre-scrollable"
-          ng-if="editorCtrl.showYAMLSource">
-          <pre><code>{{editorCtrl.sourceYAML}}</code></pre>
+          ng-if="editorCtrl.session.showYAMLSource">
+          <pre><code>{{editorCtrl.session.sourceYAML}}</code></pre>
         </div>
       </div>
     </div>
 
-    <div class="row" ng-hide="!editorCtrl.sourceYAML">
+    <div class="row" ng-hide="!editorCtrl.session.sourceYAML">
       <div class="col-xs-12">
         <button
           type="button"
           class="btn btn-xs btn-primary btn-block"
-          ng-model="editorCtrl.showYAMLParsed"
+          ng-model="editorCtrl.session.showYAMLParsed"
           uib-btn-checkbox>
           <span class="pull-left glyphicon"
-            ng-class="editorCtrl.showYAMLParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+            ng-class="editorCtrl.session.showYAMLParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
             aria-hidden="true">
           </span>
-          Parsed YAML: <b>{{editorCtrl.titleYAML}}</b>
+          Parsed YAML: <b>{{editorCtrl.session.titleYAML}}</b>
         </button>
 
 
         <div
-          ng-hide="!editorCtrl.showYAMLParsed">
+          ng-hide="!editorCtrl.session.showYAMLParsed">
           <div
             id="YAMLParsed"
             class="table-container YAMLParsed">
-            <json-formatter json="editorCtrl.parsedYAML" open="2">
+            <json-formatter json="editorCtrl.session.parsedYAML" open="2">
             </json-formatter>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="row" ng-if="editorCtrl.errorMessageYAML">
+    <div class="row" ng-if="editorCtrl.session.errorMessageYAML">
       <div class="col-xs-12">
-        <pre>{{editorCtrl.errorMessageYAML}}</pre>
+        <pre>{{editorCtrl.session.errorMessageYAML}}</pre>
       </div>
     </div>
 
@@ -147,7 +147,7 @@
       <div class="col-xs-6">
         <div class="input-group input-group-sm">
           <input
-            ng-model="editorCtrl.XSVURL"
+            ng-model="editorCtrl.session.XSVURL"
             type="text"
             class="form-control input-group-xs"
             placeholder="Enter a URL to a CSV/TSV file"
@@ -156,9 +156,9 @@
           <span class="input-group-btn">
             <button
               type="button"
-              ng-disabled="editorCtrl.XSVURL.length === 0"
+              ng-disabled="editorCtrl.session.XSVURL.length === 0"
               class="btn btn-success btn-xs btn-block input-group-button-xs"
-              ng-click="editorCtrl.loadURLXSV(editorCtrl.XSVURL)">
+              ng-click="editorCtrl.loadURLXSV(editorCtrl.session.XSVURL)">
               Load
             </button>
           </span>
@@ -168,7 +168,7 @@
         <div
           ngf-drop
           ngf-select
-          ng-model="editorCtrl.fileXSV"
+          ng-model="editorCtrl.session.fileXSV"
           class="drop-box"
           ngf-drag-over-class="'dragover'"
           ngf-multiple="false"
@@ -183,48 +183,48 @@
       </div>
     </div>
 
-    <div class="row" ng-hide="!editorCtrl.sourceXSV">
+    <div class="row" ng-hide="!editorCtrl.session.sourceXSV">
       <div class="col-xs-12">
         <button
           type="button"
           class="btn btn-xs btn-primary btn-block"
-          ng-model="editorCtrl.showXSVSource"
+          ng-model="editorCtrl.session.showXSVSource"
           uib-btn-checkbox>
           <span class="pull-left glyphicon"
-            ng-class="editorCtrl.showXSVSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+            ng-class="editorCtrl.session.showXSVSource ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
             aria-hidden="true">
           </span>
-          Source XSV: <b>{{editorCtrl.titleXSV}}</b>
+          Source XSV: <b>{{editorCtrl.session.titleXSV}}</b>
         </button>
 
         <div
           class="pre-scrollable"
-          ng-if="editorCtrl.showXSVSource">
-          <pre><code>{{editorCtrl.sourceXSV}}</code></pre>
+          ng-if="editorCtrl.session.showXSVSource">
+          <pre><code>{{editorCtrl.session.sourceXSV}}</code></pre>
         </div>
       </div>
     </div>
 
-    <div class="row" ng-hide="!editorCtrl.sourceXSV">
+    <div class="row" ng-hide="!editorCtrl.session.sourceXSV">
       <div class="col-xs-12">
         <button
           type="button"
           class="btn btn-xs btn-primary btn-block"
-          ng-model="editorCtrl.showXSVParsed"
+          ng-model="editorCtrl.session.showXSVParsed"
           uib-btn-checkbox>
           <span class="pull-left glyphicon"
-            ng-class="editorCtrl.showXSVParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
+            ng-class="editorCtrl.session.showXSVParsed ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right'"
             aria-hidden="true">
           </span>
-          Parsed XSV: <b>{{editorCtrl.titleXSV}}</b>
+          Parsed XSV: <b>{{editorCtrl.session.titleXSV}}</b>
         </button>
 
         <div
-          ng-hide="!editorCtrl.showXSVParsed">
+          ng-hide="!editorCtrl.session.showXSVParsed">
           <div
             id="XSVParsed"
             class="table-container XSVParsed">
-            <json-formatter json="editorCtrl.parsedXSV" open="2">
+            <json-formatter json="editorCtrl.session.parsedXSV" open="2">
             </json-formatter>
           </div>
         </div>
@@ -279,9 +279,9 @@
       </div>
     </div>
 
-    <div class="row" ng-if="editorCtrl.errorMessageXSV">
+    <div class="row" ng-if="editorCtrl.session.errorMessageXSV">
       <div class="col-xs-12">
-        <pre>{{editorCtrl.errorMessageXSV}}</pre>
+        <pre>{{editorCtrl.session.errorMessageXSV}}</pre>
       </div>
     </div>
   </div>
