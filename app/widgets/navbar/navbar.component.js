@@ -1,6 +1,6 @@
 import template from './navbar.html';
 import controller from './navbar.controller';
-import 'file!./INCA.png';
+import 'file-loader!./INCA.png';
 
 let navbarComponent = {
   template: template,

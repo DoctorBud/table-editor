@@ -94,13 +94,14 @@ export default class EditorController {
         type: 'tsv'
       }
     ];
+    this.exportedXSV = null;
 
     this.session = session;
     if (session.initialized) {
-      console.log('session.initialized');
+      // console.log('session.initialized');
     }
     else {
-      console.log('!session.initialized');
+      // console.log('!session.initialized');
       session.showYAMLSource = false;
       session.showYAMLParsed = false;
       this.setErrorYAML(null);
@@ -111,7 +112,6 @@ export default class EditorController {
       session.showXSVParsed = false;
       session.sourceXSV = '';
       session.titleXSV = '';
-      session.exportedXSV = null;
       session.errorMessageXSV = null;
       this.setErrorXSV(null);
 
@@ -119,8 +119,8 @@ export default class EditorController {
       session.defaultXSVURL = this.examplesXSV[0].url;
 
       var searchParams = this.$location.search();
-      if (searchParams.url) {
-        var url = searchParams.url;
+      if (searchParams.yaml) {
+        var url = searchParams.yaml;
         that.loadURLYAML(url);
       }
       else if (that.session.defaultYAMLURL) {
@@ -173,13 +173,8 @@ export default class EditorController {
     this.session.YAMLURL = url;
     this.session.errorMessage = null;
     if (url) {
-      var hash = '?yaml=' + url;
-      var newURL =  // window.location.protocol +
-                    // window.location.host +
-                    window.location.pathname +
-                    hash;
       var search = this.$location.search();
-      search.url = url;
+      search.yaml = url;
       this.$location.search(search);
     }
     else {
@@ -322,11 +317,6 @@ export default class EditorController {
     this.session.XSVURL = url;
     this.session.errorMessage = null;
     if (url) {
-      var hash = '?xsv=' + url;
-      var newURL =  // window.location.protocol +
-                    // window.location.host +
-                    window.location.pathname +
-                    hash;
       var search = this.$location.search();
       search.xsv = url;
       this.$location.search(search);
@@ -396,13 +386,14 @@ export default class EditorController {
     // If we are replacing a previously generated file we need to
     // manually revoke the object URL to avoid memory leaks.
     if (this.exportedXSV !== null) {
-      window.URL.revokeObjectURL(this.session.exportedXSV);
+      window.URL.revokeObjectURL(this.exportedXSV);
     }
 
     this.exportedXSV = window.URL.createObjectURL(data);
+    console.log('this.exportedXSV', this.exportedXSV);
 
     var link = document.createElement('a');
-    link.href = this.session.exportedXSV;
+    link.href = this.exportedXSV;
     link.download = 'filename.html';
     link.target = '_blank';
     document.body.appendChild(link);  // required in FF, optional for Chrome/Safari
