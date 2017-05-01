@@ -31,6 +31,21 @@ export default class EditorController {
     this.uiGridEditConstants = uiGridEditConstants;
     this.examplesPattern = [
       {
+        url: 'examples/beer.yaml',
+        title: 'Pattern: Beer (Local)',
+        type: 'yaml'
+      },
+      {
+        url: 'examples/beer_yeast.yaml',
+        title: 'Pattern: Beer Yeast (Local)',
+        type: 'yaml'
+      },
+      {
+        url: 'examples/beer_yeast_anatomy.yaml',
+        title: 'Pattern: Beer Yeast Anatomy (Local)',
+        type: 'yaml'
+      },
+      {
         url: 'examples/exposure_to_chemical.yaml',
         title: 'Pattern: Exposure to Chemical (Local)',
         type: 'yaml'
@@ -62,6 +77,16 @@ export default class EditorController {
       }
     ];
     this.examplesXSV = [
+      // {
+      //   url: 'examples/beer.csv',
+      //   title: 'Beer CSV (Local)',
+      //   type: 'csv'
+      // },
+      // {
+      //   url: 'examples/beer_yeast.csv',
+      //   title: 'Beer Yeast CSV (Local)',
+      //   type: 'csv'
+      // },
       {
         url: 'examples/exposure_to_chemical.csv',
         title: 'Exposure to Chemical CSV (Local)',
@@ -96,7 +121,7 @@ export default class EditorController {
       session.showPatternParsed = false;
       this.setErrorPattern(null);
       session.patternURL = null;
-      session.defaultpatternURL = null; // this.examplesPattern[0].url;
+      session.defaultpatternURL = this.examplesPattern[1].url;
 
       session.defaultConfigURL = './config.yaml';
 
@@ -108,7 +133,7 @@ export default class EditorController {
       this.setErrorXSV(null);
 
       session.XSVURL = null;
-      session.defaultXSVURL = null; // this.examplesXSV[3].url;
+      session.defaultXSVURL = null; // this.examplesXSV[1].url;
 
       var searchParams = this.$location.search();
       if (searchParams.config) {
@@ -262,10 +287,10 @@ export default class EditorController {
       selRow = {};
     }
     var newRow = angular.copy(selRow);
-    newRow['Disease ID'] = '';
-    newRow['Disease Name'] = '';
-    newRow.iri = '';
-    newRow['iri label'] = '';
+    // newRow['Disease ID'] = '';
+    // newRow['Disease Name'] = '';
+    // newRow.iri = '';
+    // newRow['iri label'] = '';
     this.session.rowData.push(newRow);
     // this.gridApi.core.handleWindowResize();
 
@@ -275,7 +300,7 @@ export default class EditorController {
       var row = rows[rows.length - 1];
       // $scope.gridOptions.data[rowIndex], $scope.gridOptions.columnDefs[colIndex]);
 
-      that.$anchorScroll('bottom_of_page');
+      // that.$anchorScroll('bottom_of_page');
 
       that.$scope.gridApi.cellNav.scrollToFocus(
         row.entity,
@@ -298,61 +323,36 @@ export default class EditorController {
     this.session.parsedConfig = null;
   }
 
-  generateDefaultACRegistry() {
+  parseConfig() {
     var that = this;
-    that.session.autocompleteRegistry = {};
-    _.each(that.session.parsedConfig.globalAutocomplete, function(entry, columnName) {
-      that.session.autocompleteRegistry[columnName] = {
-        iriPrefix: 'http://purl.obolibrary.org/obo/',
-        idColumn: columnName,
-        labelColumn: entry.label,
-        root_class: entry.root_class,
-        lookup_type: entry.lookup_type
-      };
+    this.session.parseConfig(function() {
+      var searchParams = that.$location.search();
 
-      if (entry.label) {
-        that.session.autocompleteRegistry[entry.label] = {
-          iriPrefix: 'http://purl.obolibrary.org/obo/',
-          idColumn: columnName,
-          labelColumn: entry.label,
-          root_class: entry.root_class,
-          lookup_type: entry.lookup_type
-        };
+      var patternUrl;
+      if (searchParams.yaml) {
+        patternUrl = searchParams.yaml;
+      }
+      else if (that.defaultpatternURL) {
+        patternUrl = that.defaultpatternURL;
+      }
+
+      if (patternUrl) {
+        that.loadURLPattern(patternUrl);
+      }
+
+
+      var xsvUrl;
+      if (searchParams.xsv) {
+        xsvUrl = searchParams.xsv;
+      }
+      else if (that.defaultXSVURL) {
+        xsvUrl = that.defaultXSVURL;
+      }
+
+      if (xsvUrl) {
+        that.loadURLXSV(xsvUrl);
       }
     });
-  }
-
-  parseConfig() {
-    var renderElement = document.getElementById('ConfigParsed');
-
-    try {
-      var doc = yaml.safeLoad(this.session.sourceConfig);
-      this.session.parsedConfig = doc;
-      // console.log('parseConfig', this.session.parsedConfig);
-
-      var that = this;
-      this.generateDefaultACRegistry();
-      this.session.initialized = true;
-
-      var searchParams = this.$location.search();
-      if (searchParams.yaml) {
-        var url = searchParams.yaml;
-        this.loadURLPattern(url);
-      }
-      else if (this.session.defaultpatternURL) {
-        this.loadURLPattern(this.session.defaultpatternURL);
-      }
-      if (searchParams.xsv) {
-        var xsv = searchParams.xsv;
-        this.loadURLXSV(xsv);
-      }
-      else if (this.session.defaultXSVURL) {
-        this.loadURLXSV(this.session.defaultXSVURL);
-      }
-    }
-    catch (e) {
-      console.log('error', e);
-    }
   }
 
   loadSourceConfig(source, title, url) {
@@ -421,61 +421,12 @@ export default class EditorController {
     this.session.parsedPattern = null;
   }
 
-  parsePattern() {
-    var that = this;
-    var renderElement = document.getElementById('PatternParsed');
-
-    try {
-      var doc = yaml.safeLoad(this.session.sourcePattern);
-      this.session.parsedPattern = doc;
-
-      // console.log('parsePattern', this.session.sourcePattern, this.session.parsedPattern, that.session.parsedConfig);
-      // Build the autocomplete Registry from the pattern yaml and the config yaml
-
-      this.generateDefaultACRegistry();
-      _.each(this.session.parsedPattern.vars,
-        function(classname, key) {
-          if (that.session.parsedPattern) {
-            classname = classname.replace(/^'/, '').replace(/'$/, '');
-            var curie = that.session.parsedPattern.classes[classname];
-            if (!curie) {
-              that.setErrorPattern('Error in pattern for var "' + classname + '"\n' + JSON.stringify(that.session.parsedPattern, null, 2));
-            }
-            else {
-              var curiePrefix = curie.split(':')[0];
-              var configEntry = that.session.parsedConfig[curiePrefix] ||
-                    {
-                      autocomplete: 'ols',
-                      iriPrefix: 'http://purl.obolibrary.org/obo/'
-                    };
-
-              var labelColumn = key + ' label';
-              that.session.autocompleteRegistry[key] = {
-                idColumn: key,
-                labelColumn: labelColumn,
-                root_class: curie,
-                lookup_type: configEntry.autocomplete,
-                iriPrefix: configEntry.iriPrefix,
-                curiePrefix: curiePrefix
-              };
-              that.session.autocompleteRegistry[labelColumn] = {
-                idColumn: key,
-                labelColumn: labelColumn,
-                root_class: curie,
-                lookup_type: configEntry.autocomplete,
-                iriPrefix: configEntry.iriPrefix,
-                curiePrefix: curiePrefix
-              };
-            }
-          }
-        });
-    }
-    catch (e) {
-      console.log('error', e);
-    }
+  stripQuotes(s) {
+    return s.replace(/^'/, '').replace(/'$/, '');
   }
 
   loadSourcePattern(source, title, url) {
+    var that = this;
     this.session.sourcePattern = source;
     this.session.titlePattern = title;
     this.session.patternURL = url;
@@ -488,7 +439,21 @@ export default class EditorController {
     else {
       this.$location.search({});
     }
-    this.parsePattern();
+
+    this.session.parsePattern(function() {
+      var fields = [];
+      _.each(that.session.parsedPattern.vars, function(v, k) {
+        fields.push(that.stripQuotes(v) + ' ID');
+        fields.push(that.stripQuotes(v));
+      });
+      that.session.columnDefs = that.generateColumnDefsFromFields(fields);
+      that.session.rowData = [];
+      that.gridOptions.columnDefs = that.session.columnDefs;
+      that.gridOptions.data = that.session.rowData;
+      that.$timeout(function() {
+        that.gridApi.core.handleWindowResize();
+      }, 0);
+    });
   }
 
   loadURLPattern(patternURL) {
@@ -538,13 +503,17 @@ export default class EditorController {
     this.session.parsedXSV = null;
   }
 
-  generateColumnDefsFromXSV(fields) {
+  generateColumnDefsFromFields(fields) {
     var that = this;
     function sanitizeColumnName(f) {
       return f.replace('(', '_').replace(')', '_');
     }
 
-    var columnDefs = _.map(fields, function(f) {
+    var fieldsWithIRI = angular.copy(fields);
+    fieldsWithIRI.unshift('IRI Label');
+    fieldsWithIRI.unshift('IRI');
+
+    var columnDefs = _.map(fieldsWithIRI, function(f) {
       var sanitizedName = sanitizeColumnName(f);
       var result = {
         name: sanitizedName,
@@ -575,7 +544,7 @@ export default class EditorController {
     });
 
     var lastCol = columnDefs[columnDefs.length - 1];
-    if (!lastCol.name || lastCol.name.length === 0) {
+    if (lastCol && (!lastCol.name || lastCol.name.length === 0)) {
       columnDefs.length = columnDefs.length - 1;
     }
 
@@ -594,41 +563,16 @@ export default class EditorController {
 
   parseXSV() {
     var that = this;
-    var renderElement = document.getElementById('XSVParsed');
-    var config = {
-      download: false,
-      // delimiter: '\t',  // auto-detect
-      header: true,
-      comments: true,
-      // dynamicTyping: false,
-      // preview: 0,
-      // encoding: "",
-      // worker: false,
-      // comments: false,
-      // step: undefined,
-      // complete: undefined,
-      // error: undefined,
-      // download: false,
-      skipEmptyLines: true,
-      // chunk: undefined,
-      // fastMode: undefined,
-      // beforeFirstChunk: undefined,
-      // withCredentials: undefined
-    };
+    this.session.parseXSV(function() {
+      that.session.columnDefs = that.generateColumnDefsFromFields(that.session.parsedXSV.meta.fields);
+      that.session.rowData = that.generateRowDataFromXSV(that.session.parsedXSV.data);
 
-
-    config.complete = function(results, file) {
-        that.session.parsedXSV = results; // .data;
-        that.session.columnDefs = that.generateColumnDefsFromXSV(results.meta.fields);
-        that.session.rowData = that.generateRowDataFromXSV(results.data);
-        that.gridOptions.columnDefs = that.session.columnDefs;
-        that.gridOptions.data = that.session.rowData;
+      that.gridOptions.columnDefs = that.session.columnDefs;
+      that.gridOptions.data = that.session.rowData;
       that.$timeout(function() {
         that.gridApi.core.handleWindowResize();
       }, 0);
-    };
-
-    Papa.parse(this.session.sourceXSV, config);
+    });
   }
 
   loadSourceXSV(source, title, url) {

@@ -125,7 +125,15 @@
     </div>
   </div>
 
-  <div class="row" ng-if="editorCtrl.session.parsedXSV">
+  <div class="row" ng-if="editorCtrl.session.parsedPattern || editorCtrl.session.parsedXSV">
+    <div class="col-xs-4">
+      <button
+        type="button"
+        ng-click="editorCtrl.addRow()"
+        class="btn btn-xs btn-primary btn-block">
+          New Table
+      </button>
+    </div>
     <div class="col-xs-4">
       <button
         type="button"
@@ -159,7 +167,7 @@
 
   <div
     class="row"
-    ng-hide="!editorCtrl.session.parsedXSV">
+    xng-hide="!editorCtrl.session.parsedXSV">
     <div class="col-xs-12">
       <div
         id="grid1"

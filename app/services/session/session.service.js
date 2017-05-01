@@ -1,5 +1,8 @@
 import _ from 'lodash';
 import Papa from 'papaparse';
+import yaml from 'js-yaml';
+
+/* global angular */
 
 export default class SessionService {
   constructor($http, $timeout, $location, $sce) {
@@ -9,6 +12,132 @@ export default class SessionService {
     this.$location = $location;
     this.$sce = $sce;
   }
+
+  generateDefaultACRegistry() {
+    var that = this;
+    that.autocompleteRegistry = {};
+    _.each(that.parsedConfig.globalAutocomplete, function(entry, columnName) {
+      that.autocompleteRegistry[columnName] = {
+        iriPrefix: 'http://purl.obolibrary.org/obo/',
+        idColumn: columnName,
+        labelColumn: entry.label,
+        root_class: entry.root_class,
+        lookup_type: entry.lookup_type
+      };
+
+      if (entry.label) {
+        that.autocompleteRegistry[entry.label] = angular.copy(that.autocompleteRegistry[columnName]);
+      }
+    });
+  }
+
+  parseConfig(continuation) {
+    try {
+      var doc = yaml.safeLoad(this.sourceConfig);
+      this.parsedConfig = doc;
+      // console.log('parseConfig', this.parsedConfig);
+
+      var that = this;
+      this.generateDefaultACRegistry();
+      this.initialized = true;
+
+      continuation();
+    }
+    catch (e) {
+      console.log('error', e);
+    }
+  }
+
+  stripQuotes(s) {
+    return s.replace(/^'/, '').replace(/'$/, '');
+  }
+
+  parsePattern(continuation) {
+    var that = this;
+
+    try {
+      var doc = yaml.safeLoad(this.sourcePattern);
+      this.parsedPattern = doc;
+
+      this.generateDefaultACRegistry();
+      _.each(this.parsedPattern.vars,
+        function(classname, key) {
+          if (that.parsedPattern) {
+            classname = that.stripQuotes(classname);
+            var curie = that.parsedPattern.classes[classname];
+            if (!curie) {
+              that.setErrorPattern('Error in pattern for var "' + classname + '"\n' + JSON.stringify(that.parsedPattern, null, 2));
+            }
+            else {
+              var curiePrefix = curie.split(':')[0];
+              var configEntry = that.parsedConfig[curiePrefix] ||
+                    {
+                      autocomplete: 'ols',
+                      iriPrefix: 'http://purl.obolibrary.org/obo/'
+                    };
+
+              var labelColumn = key + ' label';
+              that.autocompleteRegistry[key] = {
+                idColumn: key,
+                labelColumn: labelColumn,
+                root_class: curie,
+                lookup_type: configEntry.autocomplete,
+                iriPrefix: configEntry.iriPrefix,
+                curiePrefix: curiePrefix
+              };
+              that.autocompleteRegistry[labelColumn] = {
+                idColumn: key,
+                labelColumn: labelColumn,
+                root_class: curie,
+                lookup_type: configEntry.autocomplete,
+                iriPrefix: configEntry.iriPrefix,
+                curiePrefix: curiePrefix
+              };
+            }
+          }
+        });
+      if (!this.parsedPattern.vars) {
+        this.parsedPattern.vars = [];
+      }
+      continuation();
+    }
+    catch (e) {
+      console.log('error', e);
+    }
+  }
+
+  parseXSV(continuation) {
+    var that = this;
+    var config = {
+      download: false,
+      // delimiter: '\t',  // auto-detect
+      header: true,
+      comments: true,
+      // dynamicTyping: false,
+      // preview: 0,
+      // encoding: "",
+      // worker: false,
+      // comments: false,
+      // step: undefined,
+      // complete: undefined,
+      // error: undefined,
+      // download: false,
+      skipEmptyLines: true,
+      // chunk: undefined,
+      // fastMode: undefined,
+      // beforeFirstChunk: undefined,
+      // withCredentials: undefined
+    };
+
+
+    config.complete = function(results, file) {
+      that.parsedXSV = results;
+      continuation();
+    };
+
+    Papa.parse(this.sourceXSV, config);
+  }
+
 
   exportXSV(xsvType) {
     var delimiter = ((xsvType === 'tsv') || (xsvType === 'tab')) ?
@@ -58,6 +187,8 @@ export default class SessionService {
     link.click();
     document.body.removeChild(link);  // required in FF, optional for Chrome/Safari
   }
+
+
 
   golrLookup(colName, oldValue, val, acEntry) {
     var golrURLBase = 'https://solr-dev.monarchinitiative.org/solr/ontology/select';

@@ -23,6 +23,9 @@ prefixes:	    # User specifies this once per team/project
   ECO:
     iriPrefix: http://purl.obolibrary.org/obo/
     autocomplete: solr
+  NCBI:
+    iriPrefix: http://purl.obolibrary.org/obo/
+    autocomplete: ols
 
 globalAutocomplete:   # Mostly for HPO testing without a separate YAML
   'Disease ID':

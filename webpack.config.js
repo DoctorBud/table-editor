@@ -126,7 +126,7 @@ var config = {
 if (!production) {
   config.plugins.push(
     new WebpackBrowserPlugin({
-      browser: 'Firefox'
+      browser: 'Safari'   // 'Firefox'
     })
   );
 }
