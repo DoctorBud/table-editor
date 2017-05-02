@@ -70,7 +70,7 @@ export default class SessionService {
             }
             else {
               var curiePrefix = curie.split(':')[0];
-              var configEntry = that.parsedConfig[curiePrefix] ||
+              var configEntry = that.parsedConfig.prefixes[curiePrefix] ||
                     {
                       autocomplete: 'ols',
                       iriPrefix: 'http://purl.obolibrary.org/obo/'
@@ -367,46 +367,51 @@ export default class SessionService {
   }
 
   olsLookup(colName, oldValue, val, acEntry) {
-    var olsURLBase = 'http://www.ebi.ac.uk/ols/api/select';
-    var whichClosure = this.generateIRI(acEntry.iriPrefix, acEntry.root_class);
-    var ontology = acEntry.curiePrefix.toLowerCase();
-    var requestParams = {
-      q: val,
-      type: 'class',
-      fieldList: 'iri,label,short_form,description',
-      // local: true,
-      ontology: ontology,
-      allChildrenOf: whichClosure,
-      rows: 15
-    };
+    if (!val || val.length === 0) {
+      return [];
+    }
+    else {
+      var olsURLBase = 'http://www.ebi.ac.uk/ols/api/select';
+      var whichClosure = this.generateIRI(acEntry.iriPrefix, acEntry.root_class);
+      var ontology = acEntry.curiePrefix.toLowerCase();
+      var requestParams = {
+        q: val,
+        type: 'class',
+        fieldList: 'iri,label,short_form,description',
+        // local: true,
+        ontology: ontology,
+        allChildrenOf: whichClosure,
+        rows: 15
+      };
 
-    // requestParams.ontology = ontology;
-    // if (ontology !== 'exo') {
-    //   requestParams.ontology = ontology;
-    // }
+      // requestParams.ontology = ontology;
+      // if (ontology !== 'exo') {
+      //   requestParams.ontology = ontology;
+      // }
 
-    return this.$http.get(
-      olsURLBase,
-      {
-        withCredentials: false,
-        params: requestParams
-      })
-      .then(
-        function(response) {
-          var data = response.data.response.docs;
-          // console.log('OLS success', olsURLBase, requestParams, data);
-          var result = data.map(function(item) {
-            return {
-              id: item.short_form,
-              name: item.label
-            };
-          });
-          return result;
-        },
-        function(error) {
-          console.log('OLS error: ', olsURLBase, requestParams, error);
-        }
-      );
+      return this.$http.get(
+        olsURLBase,
+        {
+          withCredentials: false,
+          params: requestParams
+        })
+        .then(
+          function(response) {
+            var data = response.data.response.docs;
+            // console.log('OLS success', olsURLBase, requestParams, data);
+            var result = data.map(function(item) {
+              return {
+                id: item.short_form,
+                name: item.label
+              };
+            });
+            return result;
+          },
+          function(error) {
+            console.log('OLS error: ', olsURLBase, requestParams, error);
+          }
+        );
+    }
   }
 
 
@@ -427,5 +432,29 @@ export default class SessionService {
         return result;
       });
   }
+
+
+
+  inlineLookup(colName, oldValue, val, acEntry) {
+    var all = [
+      {id: 'BEER:0000001', name: 'Pilsner'},
+      {id: 'BEER:0000002', name: 'Lager'},
+      {id: 'BEER:0000003', name: 'Ale'},
+      {id: 'BEER:0000004', name: 'Pale Ale'},
+      {id: 'BEER:0000005', name: 'India Pale Ale'},
+      {id: 'BEER:0000006', name: 'Porter'},
+      {id: 'BEER:0000007', name: 'Stout'}
+    ];
+
+    var matches = [];
+    _.each(all, function(v) {
+      if (v.name.indexOf(val) >= 0) {
+        matches.push(v);
+      }
+    });
+
+    return matches;
+  }
+
 }
 SessionService.$inject = ['$http', '$timeout', '$location', '$sce'];

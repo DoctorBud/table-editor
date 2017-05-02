@@ -121,7 +121,7 @@ export default class EditorController {
       session.showPatternParsed = false;
       this.setErrorPattern(null);
       session.patternURL = null;
-      session.defaultpatternURL = this.examplesPattern[1].url;
+      session.defaultpatternURL = this.examplesPattern[2].url;
 
       session.defaultConfigURL = './config.yaml';
 
@@ -181,7 +181,9 @@ export default class EditorController {
         if (acEntry) {
           var colId = row[acEntry.idColumn];
 
-          result = acEntry.iriPrefix + colId.replace(':', '_');
+          if (colId) {
+            result = acEntry.iriPrefix + colId.replace(':', '_');
+          }
         }
         else {
           result = 'http://www.ebi.ac.uk/ols/search?q=' + encodeURI(row[colName]);
@@ -225,13 +227,15 @@ export default class EditorController {
       }
       oldValue = rowEntity[acEntry.labelColumn];
     }
-    // console.log('getTerm', colName, oldValue, val, acEntry, this.session.autocompleteRegistry);
 
     if (acEntry && acEntry.lookup_type === 'golr') {
       return this.session.golrLookup(colName, oldValue, val, acEntry);
     }
     else if (acEntry && acEntry.lookup_type === 'ols') {
       return this.session.olsLookup(colName, oldValue, val, acEntry);
+    }
+    else if (acEntry && acEntry.lookup_type === 'inline') {
+      return this.session.inlineLookup(colName, oldValue, val, acEntry);
     }
     else {
       return this.session.monarchLookup(colName, oldValue, val, acEntry);
@@ -246,7 +250,6 @@ export default class EditorController {
 
     if (this.isAutocompleteColumn(cellName)) {
       var acEntry = this.session.autocompleteRegistry[cellName];
-      // console.log('termSelected', acEntry, cellName, cellValue);
       if (acEntry) {
         if (acEntry.idColumn) {
           cell.row.entity[acEntry.idColumn] = cellValue.id;
@@ -270,23 +273,56 @@ export default class EditorController {
       cell.row.entity[cellName] = cellValue;
     }
 
+    console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
+    var e = cell.row.entity;
+    if (!e['IRI label'] || e['IRI label'].length === 0) {
+      if (e.beer && e.yeast && e.anatomy) {
+        cell.row.entity['IRI label'] = '' + e['beer label'] + ' beer with ' + e['yeast label'] + ' from ' + e['anatomy label'];
+      }
+    }
     this.$scope.$broadcast(this.uiGridEditConstants.events.END_CELL_EDIT);
+  }
+
+  convertIDToNumber(id) {
+    var prefix = this.session.parsedConfig.IRIGeneration.prefix;
+
+    var result = 0;
+    if (id.indexOf(prefix) === 0) {
+      id = id.slice(prefix.length + 1);
+      result = parseInt(id, 10);
+    }
+    else {
+      console.log('...ERROR in id', id);
+    }
+
+    return result;
+  }
+
+
+  convertNumberToID(number) {
+    var prefix = this.session.parsedConfig.IRIGeneration.prefix;
+    number = '000000' + number;
+    var result = prefix + ':' + number.slice(number.length - 6);
+    return result;
   }
 
   addRow() {
     var that = this;
-    var selCell = this.gridApi.cellNav.getFocusedCell();
     var selRow = null;
-    if (selCell) {
-      selRow = selCell.row.entity;
-    }
-    else if (this.session.rowData.length > 0) {
+    var lastIRINumber = this.session.parsedConfig.IRIGeneration.counter;
+
+    if (this.session.rowData.length > 0) {
       selRow = this.session.rowData[this.session.rowData.length - 1];
+      lastIRINumber = this.convertIDToNumber(selRow.IRI);
     }
     else {
       selRow = {};
     }
     var newRow = angular.copy(selRow);
+
+    ++lastIRINumber;
+
+    newRow.IRI = this.convertNumberToID(lastIRINumber);
     // newRow['Disease ID'] = '';
     // newRow['Disease Name'] = '';
     // newRow.iri = '';
@@ -327,19 +363,17 @@ export default class EditorController {
     var that = this;
     this.session.parseConfig(function() {
       var searchParams = that.$location.search();
-
       var patternUrl;
       if (searchParams.yaml) {
         patternUrl = searchParams.yaml;
       }
-      else if (that.defaultpatternURL) {
-        patternUrl = that.defaultpatternURL;
+      else if (that.session.defaultpatternURL) {
+        patternUrl = that.session.defaultpatternURL;
       }
 
       if (patternUrl) {
         that.loadURLPattern(patternUrl);
       }
-
 
       var xsvUrl;
       if (searchParams.xsv) {
@@ -443,8 +477,8 @@ export default class EditorController {
     this.session.parsePattern(function() {
       var fields = [];
       _.each(that.session.parsedPattern.vars, function(v, k) {
-        fields.push(that.stripQuotes(v) + ' ID');
         fields.push(that.stripQuotes(v));
+        fields.push(that.stripQuotes(v) + ' label');
       });
       that.session.columnDefs = that.generateColumnDefsFromFields(fields);
       that.session.rowData = [];
@@ -510,7 +544,7 @@ export default class EditorController {
     }
 
     var fieldsWithIRI = angular.copy(fields);
-    fieldsWithIRI.unshift('IRI Label');
+    fieldsWithIRI.unshift('IRI label');
     fieldsWithIRI.unshift('IRI');
 
     var columnDefs = _.map(fieldsWithIRI, function(f) {

@@ -1,6 +1,6 @@
 pattern_name: beer/patterns/beer_yeast
 classes:
-  beer: ENVO:00010483
+  beer: BEER:0000001
   yeast: NCBITaxon:4932
 
 relations:

@@ -1,8 +1,8 @@
 pattern_name: beer/patterns/beer_yeast_anatomy
 classes:
-  beer: ENVO:00010483
+  beer: BEER:0000001
   yeast: NCBITaxon:4932
-  anatomy: NCBITaxon:4932
+  anatomy: UBERON:0001062
 
 relations:
   part of: BFO_0000050
