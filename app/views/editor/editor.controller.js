@@ -121,7 +121,7 @@ export default class EditorController {
       session.showPatternParsed = false;
       this.setErrorPattern(null);
       session.patternURL = null;
-      session.defaultpatternURL = this.examplesPattern[2].url;
+      session.defaultpatternURL = null; // this.examplesPattern[2].url;
 
       session.defaultConfigURL = './config.yaml';
 
@@ -314,10 +314,12 @@ export default class EditorController {
     if (this.session.rowData.length > 0) {
       selRow = this.session.rowData[this.session.rowData.length - 1];
       lastIRINumber = this.convertIDToNumber(selRow.IRI);
+      selRow = {};
     }
     else {
       selRow = {};
     }
+
     var newRow = angular.copy(selRow);
 
     ++lastIRINumber;
@@ -338,9 +340,9 @@ export default class EditorController {
 
       // that.$anchorScroll('bottom_of_page');
 
-      that.$scope.gridApi.cellNav.scrollToFocus(
-        row.entity,
-        that.$scope.gridApi.grid.columns[0]);
+      // that.$scope.gridApi.cellNav.scrollToFocus(
+      //   row.entity,
+      //   that.$scope.gridApi.grid.columns[0]);
 
       // that.$timeout(function() {
       //   that.$anchorScroll.yOffset = -800;
@@ -554,9 +556,15 @@ export default class EditorController {
         field: sanitizedName,
         displayName: f,
         minWidth: 100,
+        maxWidth: 120,
         enableCellEdit: false,
         enableCellEditOnFocus: false
       };
+
+      if (sanitizedName.indexOf(' label') === -1) {
+        result.minWidth = 90;
+        result.maxWidth = 90;
+      }
 
       if (that.isAutocompleteColumn(f)) {
         result.enableCellEditOnFocus = true;

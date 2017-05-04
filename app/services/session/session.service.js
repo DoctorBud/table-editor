@@ -448,7 +448,7 @@ export default class SessionService {
 
     var matches = [];
     _.each(all, function(v) {
-      if (v.name.indexOf(val) >= 0) {
+      if (v.name.toUpperCase().indexOf(val.toUpperCase()) >= 0) {
         matches.push(v);
       }
     });
