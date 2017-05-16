@@ -5,12 +5,60 @@ import yaml from 'js-yaml';
 /* global angular */
 
 export default class SessionService {
-  constructor($http, $timeout, $location, $sce) {
+  constructor($http, $timeout, $location, $sce, $rootScope) {
     this.name = 'DefaultSessionName';
     this.$http = $http;
     this.$timeout = $timeout;
     this.$location = $location;
     this.$sce = $sce;
+    this.$rootScope = $rootScope;
+    this.defaultConfigURL = 'configurations/hpo/config.yaml';
+
+    var that = this;
+    var searchParams = this.$location.search();
+    console.log('search', searchParams);
+    if (searchParams.config) {
+      var config = searchParams.config;
+      that.loadURLConfig(config);
+    }
+    else if (that.defaultConfigURL) {
+      that.loadURLConfig(that.defaultConfigURL);
+    }
+  }
+
+
+  loadSourceConfig(source, title, url) {
+    console.log('loadSourceConfig', title, url);
+    this.sourceConfig = source;
+    this.titleConfig = title;
+    this.configURL = url;
+    this.errorMessageConfig = null;
+    if (url) {
+      var search = this.$location.search();
+      search.config = url;
+      this.$location.search(search);
+    }
+    else {
+      this.$location.search({});
+    }
+    var that = this;
+    this.parseConfig(function() {
+      that.$rootScope.$broadcast('parsedConfig');
+    });
+  }
+
+  loadURLConfig(configURL) {
+    console.log('loadURLConfig', configURL);
+    var that = this;
+    this.configURL = configURL;
+    this.$http.get(configURL, {withCredentials: false}).then(
+      function(result) {
+        that.loadSourceConfig(result.data, configURL, configURL);
+      },
+      function(error) {
+        that.setErrorConfig('Error loading URL ' + configURL + '\n\n' + JSON.stringify(error));
+      }
+    );
   }
 
   generateDefaultACRegistry() {
@@ -35,7 +83,7 @@ export default class SessionService {
     try {
       var doc = yaml.safeLoad(this.sourceConfig);
       this.parsedConfig = doc;
-      // console.log('parseConfig', this.parsedConfig);
+      console.log('parseConfig', this.parsedConfig);
 
       var that = this;
       this.generateDefaultACRegistry();
@@ -457,4 +505,4 @@ export default class SessionService {
   }
 
 }
-SessionService.$inject = ['$http', '$timeout', '$location', '$sce'];
+SessionService.$inject = ['$http', '$timeout', '$location', '$sce', '$rootScope'];

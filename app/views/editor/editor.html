@@ -1,5 +1,5 @@
 <div class="editor-container container-fluid">
-  <div class="row">
+  <div class="row" ng-if="!editorCtrl.session.parsedConfig.patternless">
     <div class="col-xs-3">
       <div class="btn-group btn-group-block" uib-dropdown keyboard-nav>
         <button
@@ -174,7 +174,6 @@
     </div>
   </div>
 
-  <div style="height:25vh;"></div>
   <div id="bottom_of_page"></div>
 </div>
 

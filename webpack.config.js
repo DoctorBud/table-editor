@@ -117,8 +117,10 @@ var config = {
   },
 
   devServer: {
+    hot: false,
     inline: true,
     contentBase: dist,
+    watchContentBase: true,
     historyApiFallback: true
   },
 };
@@ -132,9 +134,8 @@ if (!production) {
 }
 config.plugins.push(
   new CopyWebpackPlugin([
-      { from: '../config.yaml' },
       { from: '../README.md' },
-      { from: '../examples', to: 'examples' }
+      { from: '../configurations', to: 'configurations' }
   ]));
 
 config.plugins.push(

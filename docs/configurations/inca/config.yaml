@@ -39,12 +39,13 @@ IRIGeneration:
 
 inline:
   BEER:
+    - Pilsner
     - Lager
     - Ale
-    - Pale Ale
+    - Pale
+    - India
     - Porter
-    - India Pale Ale
-    - Barleywine
+    - Stout
 
 globalAutocomplete:   # Mostly for HPO testing without a separate YAML
   'Disease ID':
