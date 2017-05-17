@@ -345,7 +345,7 @@ export default class EditorController {
 
       that.$scope.gridApi.cellNav.scrollToFocus(
         row.entity,
-        that.$scope.gridApi.grid.columns[0]);
+        that.$scope.gridApi.grid.columns[6]);
 
       that.$timeout(function() {
         // that.$anchorScroll.yOffset = -800;

@@ -484,7 +484,8 @@ export default class SessionService {
 
 
   inlineLookup(colName, oldValue, val, acEntry) {
-    var all = [
+    var inlineBlock = this.parsedConfig.inline;
+    var terms = [
       {id: 'BEER:0000001', name: 'Pilsner'},
       {id: 'BEER:0000002', name: 'Lager'},
       {id: 'BEER:0000003', name: 'Ale'},
@@ -494,8 +495,17 @@ export default class SessionService {
       {id: 'BEER:0000007', name: 'Stout'}
     ];
 
+    if (inlineBlock && inlineBlock[colName]) {
+      terms = _.map(inlineBlock[colName], function(v) {
+        return {
+          id: v,
+          name: v
+        };
+      });
+    }
+
     var matches = [];
-    _.each(all, function(v) {
+    _.each(terms, function(v) {
       if (v.name.toUpperCase().indexOf(val.toUpperCase()) >= 0) {
         matches.push(v);
       }
