@@ -16,7 +16,6 @@ export default class SessionService {
 
     var that = this;
     var searchParams = this.$location.search();
-    console.log('search', searchParams);
     if (searchParams.config) {
       var config = searchParams.config;
       that.loadURLConfig(config);
@@ -28,7 +27,6 @@ export default class SessionService {
 
 
   loadSourceConfig(source, title, url) {
-    console.log('loadSourceConfig', title, url);
     this.sourceConfig = source;
     this.titleConfig = title;
     this.configURL = url;
@@ -48,7 +46,6 @@ export default class SessionService {
   }
 
   loadURLConfig(configURL) {
-    console.log('loadURLConfig', configURL);
     var that = this;
     this.configURL = configURL;
     this.$http.get(configURL, {withCredentials: false}).then(
@@ -67,6 +64,7 @@ export default class SessionService {
     _.each(that.parsedConfig.globalAutocomplete, function(entry, columnName) {
       that.autocompleteRegistry[columnName] = {
         iriPrefix: 'http://purl.obolibrary.org/obo/',
+        curiePrefix: entry.curiePrefix,
         idColumn: columnName,
         labelColumn: entry.label,
         root_class: entry.root_class,
@@ -83,7 +81,6 @@ export default class SessionService {
     try {
       var doc = yaml.safeLoad(this.sourceConfig);
       this.parsedConfig = doc;
-      console.log('parseConfig', this.parsedConfig);
 
       var that = this;
       this.generateDefaultACRegistry();
@@ -419,13 +416,14 @@ export default class SessionService {
       return [];
     }
     else {
+      // console.log('olsLookup', colName, oldValue, val, acEntry);
       var olsURLBase = 'http://www.ebi.ac.uk/ols/api/select';
       var whichClosure = this.generateIRI(acEntry.iriPrefix, acEntry.root_class);
       var ontology = acEntry.curiePrefix.toLowerCase();
       var requestParams = {
         q: val,
         type: 'class',
-        fieldList: 'iri,label,short_form,description',
+        fieldList: 'iri,label,short_form,obo_id,ontology_name,ontology_prefix,description,type',
         // local: true,
         ontology: ontology,
         allChildrenOf: whichClosure,
@@ -449,7 +447,7 @@ export default class SessionService {
             // console.log('OLS success', olsURLBase, requestParams, data);
             var result = data.map(function(item) {
               return {
-                id: item.short_form,
+                id: item.obo_id,  // short_form,
                 name: item.label
               };
             });

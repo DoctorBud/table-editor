@@ -90,14 +90,13 @@ export default class EditorController {
     this.session = session;
 
     function completeInitialization() {
-      console.log('completeInitialization');
       session.showPatternSource = false;
       session.showPatternParsed = false;
       that.setErrorPattern(null);
       session.patternURL = null;
 
       if (session.parsedConfig.patternless) {
-        console.log('patternless===true');
+        // console.log('patternless===true');
       }
       else {
         if (session.parsedConfig.defaultPatterns) {
@@ -266,7 +265,7 @@ export default class EditorController {
       cell.row.entity[cellName] = cellValue;
     }
 
-    console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
+    // console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
     var e = cell.row.entity;
     if (!e['IRI label'] || e['IRI label'].length === 0) {
       if (e.beer && e.yeast && e.anatomy) {
@@ -350,7 +349,6 @@ export default class EditorController {
       that.$timeout(function() {
         // that.$anchorScroll.yOffset = -800;
         that.$anchorScroll('scroll_anchor_' + row.uid);
-        console.log('scroll_anchor_' + row.uid);
       }, 100);
     }, 100);
   }
@@ -365,7 +363,6 @@ export default class EditorController {
   }
 
   parsedConfig() {
-    console.log('###parsedConfig');
     var that = this;
     var searchParams = that.$location.search();
     var patternUrl;
@@ -619,7 +616,7 @@ export default class EditorController {
         }
       }
       else {
-        console.log('No pattern used. Generate columns from XSV', xsvColumns);
+        // console.log('No pattern used. Generate columns from XSV', xsvColumns);
       }
 
       that.session.columnDefs = xsvColumns;
@@ -636,7 +633,7 @@ export default class EditorController {
       }
       else {
         that.session.rowData = [];
-        that.setErrorXSV('MISMAATCH');
+        that.setErrorXSV('Error: XSV Columns do not match Pattern Columns');
       }
     });
   }

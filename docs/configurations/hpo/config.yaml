@@ -4,6 +4,11 @@ inline:
     - TAS
     - PCS
     - ICE
+  'Evidence Name':
+    - IEA
+    - TAS
+    - PCS
+    - ICE
 
 patternless: true
 
@@ -18,8 +23,10 @@ globalAutocomplete:   # Mostly for HPO testing without a separate YAML
     lookup_type: 'golr'
   'Phenotype ID':
     label: 'Phenotype Name'
+    # root_class: 'HP:0000118'  # 'UPHENO:0001001'
     root_class: 'HP:0000118'  # 'UPHENO:0001001'
-    lookup_type: 'golr'
+    curiePrefix: 'HP'
+    lookup_type: 'ols'
   'Evidence ID':
     label: 'Evidence Name'
     lookup_type: 'inline'
