@@ -1,5 +1,13 @@
 <div class="editor-container container-fluid">
-  <div class="row" ng-if="!editorCtrl.session.parsedConfig.patternless">
+<!--   <button
+    type="button"
+    title="Add Association"
+    class="btn btn-primary btn-xs xbtn-compact"
+    ng-click="editorCtrl.openGitHub()">
+    <i class="fa fa-github fa-fw"></i>
+  </button>
+
+ -->  <div class="row" ng-if="!editorCtrl.session.parsedConfig.patternless">
     <div class="col-xs-3">
       <div class="btn-group btn-group-block" uib-dropdown keyboard-nav>
         <button
@@ -77,6 +85,12 @@
           uib-dropdown-menu
           role="menu"
           aria-labelledby="simple-btn-keyboard-nav">
+
+          <li role="menuitem">
+            <a ng-click="editorCtrl.loadNewXSV()" href="">
+              New Table
+            </a>
+          </li>
 
           <li ng-repeat="e in editorCtrl.examplesXSV" role="menuitem">
             <a ng-click="editorCtrl.loadSourceXSVItem(e.file, e.title, e.url)" href="">

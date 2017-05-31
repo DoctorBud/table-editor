@@ -29,16 +29,16 @@ prefixes:	    # User specifies this once per team/project
   UBERON:
     iriPrefix: http://purl.obolibrary.org/obo/
     autocomplete: ols
-  BEER:
+  ECTO:
     iriPrefix: http://purl.obolibrary.org/obo/
     autocomplete: inline
 
 IRIGeneration:
-  prefix: BEER
-  counter: 0000010
+  prefix: ECTO
+  type: uuid
 
 inline:
-  BEER:
+  ECTO:
     - Pilsner
     - Lager
     - Ale
@@ -65,3 +65,18 @@ globalAutocomplete:   # Mostly for HPO testing without a separate YAML
 #    root_class: 'ECO:0000000'
 #    lookup_type: 'golr'
 
+defaultPatterns:
+  - url: 'configurations/ecto/exposure_to_chemical.yaml'
+    title: 'Exposure to Chemical'
+    type: 'yaml'
+  - url: 'configurations/ecto/abnormalLevelOfChemicalInEntity.yaml'
+    title: 'Abnormal Level of Chemical in Entity'
+    type: 'yaml'
+  - url: 'configurations/ecto/exposure_to_levels_in_medium.yaml'
+    title: 'Exposure to Levels in Medium'
+    type: 'yaml'
+
+defaultXSVs:
+  - url: 'configurations/ecto/exposure_to_chemical.csv'
+    title: 'Exposure to Chemical'
+    type: 'csv'

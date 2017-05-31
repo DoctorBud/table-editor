@@ -3,6 +3,7 @@
 import _ from 'lodash';
 import yaml from 'js-yaml';
 import Papa from 'papaparse';
+const uuidv4 = require('uuid/v4');  // https://github.com/kelektiv/node-uuid
 
 if (!String.prototype.endsWith) {
   /* eslint no-extend-native: 0 */
@@ -69,9 +70,9 @@ export default class EditorController {
       }
       session.defaultXSVURL = null;
 
-      if (that.examplesXSV && that.examplesXSV.length > 0) {
-        session.defaultXSVURL = that.examplesXSV[0].url;
-      }
+      // if (that.examplesXSV && that.examplesXSV.length > 0) {
+      //   session.defaultXSVURL = that.examplesXSV[0].url;
+      // }
 
       that.parsedConfig();
     }
@@ -215,13 +216,23 @@ export default class EditorController {
       cell.row.entity[cellName] = cellValue;
     }
 
-    // console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
-    // var e = cell.row.entity;0
-    // if (!e['IRI label'] || e['IRI label'].length === 0) {
-    //   if (e.beer && e.yeast && e.anatomy) {
-    //     cell.row.entity['IRI label'] = '' + e['beer label'] + ' beer with ' + e['yeast label'] + ' from ' + e['anatomy label'];
-    //   }
-    // }
+    console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
+
+    if (that.session.parsedPattern && that.session.parsedPattern.name) {
+      var text = that.session.parsedPattern.name.text;
+      var vars = that.session.parsedPattern.name.vars;
+      var textFragments = text.split('%s');
+      console.log('text/vars', text, vars, textFragments);
+
+      var syntheticLabel = '';
+      for (var i = 0; i < vars.length; ++i) {
+        var labelColumnName = vars[i] + ' label';
+        syntheticLabel += textFragments[i] + cell.row.entity[labelColumnName];
+      }
+      syntheticLabel += textFragments[i];
+
+      cell.row.entity['iri label'] = syntheticLabel;
+    }
 
     this.$timeout(function() {
       that.$scope.gridApi.cellNav.scrollToFocus(
@@ -267,6 +278,12 @@ export default class EditorController {
     }
   }
 
+  openGitHub() {
+    var that = this;
+
+    console.log('openGitHub');
+  }
+
   addRow() {
     var that = this;
 
@@ -277,22 +294,19 @@ export default class EditorController {
     else {
       topRow = null;
     }
-
-
-    var newRow;
+    var newRow = {};
     var iriGeneration = this.session.parsedConfig.IRIGeneration;
-    if (iriGeneration) {
+    if (iriGeneration.type === 'uuid') {
+      newRow.iri = uuidv4(iriGeneration.prefix);
+    }
+    else if (iriGeneration.type === 'counter') {
       var lastIRINumber = this.session.parsedConfig.IRIGeneration.counter;
-
-      newRow = {};
 
       ++lastIRINumber;
 
       newRow.iri = this.convertNumberToID(lastIRINumber);
     }
     else {
-      newRow = {};
-
       if (topRow) {
         newRow['Disease ID'] = topRow['Disease ID'];
         newRow['Disease Name'] = topRow['Disease Name'];
@@ -304,7 +318,7 @@ export default class EditorController {
 
     this.$timeout(function() {
       var rows = that.$scope.gridApi.grid.getVisibleRows(); // that.session.rowData;
-      var col = that.$scope.gridApi.grid.columns[8];
+      var col = that.$scope.gridApi.grid.columns[4];
       var colUID = col.uid;
       var rowUID;
       var row;
@@ -323,7 +337,7 @@ export default class EditorController {
         that.$anchorScroll.yOffset = 0;
         var anchor = 'scroll_anchor_' + rowUID + '_' + colUID;
         // console.log('anchor', anchor);
-        that.$anchorScroll(anchor);
+        // that.$anchorScroll(anchor);
       }, 10);
 
 
@@ -453,10 +467,10 @@ export default class EditorController {
       // console.log('parsedPattern', that.session.parsedPattern);
       var fields = [];
       _.each(that.session.parsedPattern.vars, function(v, k) {
-        fields.push(that.stripQuotes(v));
-        fields.push(that.stripQuotes(v) + ' label');
+        fields.push(that.stripQuotes(k));
+        fields.push(that.stripQuotes(k) + ' label');
       });
-      that.session.columnDefs = that.generateColumnDefsFromFields(fields);
+      that.session.columnDefs = that.generateColumnDefsFromFields(fields, true);
       that.session.rowData = [];
       that.gridOptions.columnDefs = angular.copy(that.session.columnDefs);
       that.gridOptions.data = that.session.rowData;
@@ -517,7 +531,7 @@ export default class EditorController {
     this.session.parsedXSV = null;
   }
 
-  generateColumnDefsFromFields(fields) {
+  generateColumnDefsFromFields(fields, addIRI) {
     var that = this;
     function sanitizeColumnName(f) {
       return f.replace('(', '_').replace(')', '_');
@@ -525,7 +539,7 @@ export default class EditorController {
 
     var fieldsWithIRI = angular.copy(fields);
 
-    if (!this.session.parsedConfig.patternless) {
+    if (addIRI) {
       fieldsWithIRI.unshift('iri label');
       fieldsWithIRI.unshift('iri');
     }
@@ -544,17 +558,17 @@ export default class EditorController {
         field: sanitizedName,
         originalName: f,
         displayName: f,
-        minWidth: 90,
+        minWidth: 100,
+        width: 100,
         // maxWidth: 120,
         enableCellEdit: false,
         enableCellEditOnFocus: false,
         visible: visible
       };
 
-      // if (sanitizedName.indexOf(' label') === -1) {
-      //   result.minWidth = 90;
-      //   result.maxWidth = 90;
-      // }
+      if (f.endsWith(' label')) {
+        result.width = null;
+      }
 
       if (that.isAutocompleteColumn(f)) {
         result.enableCellEditOnFocus = true;
@@ -622,15 +636,18 @@ export default class EditorController {
   compareColumnDefs(patternColumns, xsvColumns) {
     var result = true;
 
-    if (patternColumns.length + 2 !== xsvColumns.length) {
-      console.log('#compareColumnDefs length mismatch:', patternColumns.length + 2, xsvColumns.length);
-      result = false;
+    if (this.session.parsedConfig.patternless) {
+      // HPO mode
     }
     else {
-      // console.log('compare',
-      //   patternColumns[0], xsvColumns.slice(2)[0],
-      //   patternColumns[1], xsvColumns.slice(2)[1]);
-      result = _.isEqual(patternColumns, xsvColumns.slice(2));
+      if (patternColumns.length !== xsvColumns.length) {
+        console.log('#compareColumnDefs length mismatch:', patternColumns.length + 2, xsvColumns.length);
+        result = false;
+      }
+      else {
+        console.log('compare', patternColumns, xsvColumns);
+        result = _.isEqual(patternColumns, xsvColumns);
+      }
     }
     return result;
   }
@@ -642,12 +659,12 @@ export default class EditorController {
 
       var columnsMatch = true;
       if (that.session.parsedPattern) {
-        console.log('Pattern used. Verify conformance with XSV',
-          that.session.columnDefs,
-          xsvColumns);
+        // console.log('Pattern used. Verify conformance with XSV',
+        //   that.session.columnDefs,
+        //   xsvColumns);
 
         if (that.compareColumnDefs(that.session.columnDefs, xsvColumns)) {
-          console.log('#Consistent column defs in Pattern vs XSV');
+          // console.log('#Consistent column defs in Pattern vs XSV');
           xsvColumns = that.session.columnDefs;
         }
         else {
@@ -678,6 +695,22 @@ export default class EditorController {
     });
   }
 
+  loadNewXSV() {
+    var that = this;
+    this.session.sourceXSV = 'New XSV';
+    this.session.titleXSV = 'New XSV';
+    this.session.XSVURL = null;
+    this.session.errorMessageXSV = null;
+
+    // var newRow = {};
+    // _.each(that.session.columnDefs.slice(1), function(colDef) {
+    //   newRow[colDef.field] = '';
+    // });
+    that.session.rowData.splice(0, that.session.rowData.length);
+    // console.log('loadNewXSV', that.session.columnDefs, that.session.rowData);
+  }
+
+
   loadSourceXSV(source, title, url) {
     this.session.sourceXSV = source;
     this.session.titleXSV = title;
@@ -693,6 +726,7 @@ export default class EditorController {
     }
     this.parseXSV();
   }
+
 
   loadURLXSV(XSVURL) {
     var that = this;

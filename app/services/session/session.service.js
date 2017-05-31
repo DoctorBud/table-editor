@@ -12,7 +12,7 @@ export default class SessionService {
     this.$location = $location;
     this.$sce = $sce;
     this.$rootScope = $rootScope;
-    this.defaultConfigURL = 'configurations/hpo/config.yaml';
+    this.defaultConfigURL = 'configurations/go/config.yaml';
 
     var that = this;
     var searchParams = this.$location.search();
@@ -24,7 +24,6 @@ export default class SessionService {
       that.loadURLConfig(that.defaultConfigURL);
     }
   }
-
 
   loadSourceConfig(source, title, url) {
     this.sourceConfig = source;
