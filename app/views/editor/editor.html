@@ -39,7 +39,7 @@
           ng-model="editorCtrl.session.patternURL"
           type="text"
           class="form-control input-group-xs"
-          placeholder="Enter a URL to a CSV/TSV file"
+          placeholder="Enter a URL to a YAML Pattern file"
           aria-describedby="import-url">
 
         <span class="input-group-btn">
@@ -141,9 +141,12 @@
     </div>
   </div>
 
-  <div class="row" ng-if="editorCtrl.session.parsedPattern || editorCtrl.session.parsedXSV">
+  <div
+    class="row"
+    ng-if="editorCtrl.session.parsedPattern || editorCtrl.session.parsedXSV"
+    style="min-height:80px;padding:0;margin:1px; border:2px solid lightgray;border-radius:5px;background:ivory;">
     <div class="col-xs-8">
-      <h5>{{editorCtrl.getRowTitle()}}</h5>
+      <h6>{{editorCtrl.getRowTitle()}}</h6>
     </div>
     <div class="col-xs-4">
       <a
@@ -155,7 +158,7 @@
       </a>
     </div>
     <div class="col-xs-12">
-      <h5><b>{{editorCtrl.getRowDetails()}}</b></h5>
+      <h6><b>{{editorCtrl.getRowDetails()}}</b></h6>
     </div>
   </div>
 

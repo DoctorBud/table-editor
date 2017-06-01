@@ -33,7 +33,6 @@ export default class EditorController {
     this.uiGridConstants = uiGridConstants;
     this.uiGridEditConstants = uiGridEditConstants;
     this.examplesPattern = null;
-
     this.examplesXSV = null;
 
     this.exportedXSV = null;
@@ -79,7 +78,7 @@ export default class EditorController {
 
     if (session.initialized) {
       // console.log('session.initialized');
-      // completeInitialization();
+      completeInitialization();
     }
     else {
       console.log('!session.initialized');
@@ -458,7 +457,6 @@ export default class EditorController {
       }
     }
 
-
     if (patternUrl) {
       that.loadURLPattern(patternUrl, patternLoaded);
     }
@@ -497,11 +495,12 @@ export default class EditorController {
   setErrorPattern(error) {
     if (error) {
       console.log('#setErrorPattern', error);
+      this.session.titlePattern = '';
+      this.session.sourcePattern = '';
+      this.session.patternURL = null;
+      this.session.parsedPattern = null;
     }
     this.session.errorMessagePattern = error;
-    this.session.titlePattern = '';
-    this.session.sourcePattern = '';
-    this.session.parsedPattern = null;
   }
 
   stripQuotes(s) {
@@ -534,6 +533,8 @@ export default class EditorController {
       that.session.rowData = [];
       that.gridOptions.columnDefs = angular.copy(that.session.columnDefs);
       that.gridOptions.data = that.session.rowData;
+      that.setErrorPattern(null);
+      that.loadNewXSV();
       if (continuation) {
         continuation();
       }
@@ -586,9 +587,16 @@ export default class EditorController {
 
   setErrorXSV(error) {
     this.session.errorMessageXSV = error;
-    this.session.titleXSV = '';
-    this.session.sourceXSV = '';
-    this.session.parsedXSV = null;
+    if (error) {
+      this.session.titleXSV = '';
+      this.session.sourceXSV = '';
+      this.session.parsedXSV = null;
+      this.session.XSVURL = null;
+    }
+  }
+
+  keydown(event) {
+    console.log('keydown', event);
   }
 
   generateColumnDefsFromFields(fields, addIRI) {
@@ -627,7 +635,7 @@ export default class EditorController {
       };
 
       if (f.endsWith(' label')) {
-        result.width = 200;
+        result.width = 150;
       }
 
       if (that.isAutocompleteColumn(f)) {
@@ -720,6 +728,7 @@ export default class EditorController {
       var columnsMatch = true;
       if (that.session.parsedPattern) {
         // console.log('Pattern used. Verify conformance with XSV',
+        //   that.session.parsedPattern,
         //   that.session.columnDefs,
         //   xsvColumns);
 
@@ -733,12 +742,11 @@ export default class EditorController {
         }
       }
       else {
-        // console.log('No pattern used. Generate columns from XSV', xsvColumns);
+        console.log('No pattern used. Generate columns from XSV', xsvColumns);
       }
 
-      that.session.columnDefs = xsvColumns;
-
       if (columnsMatch) {
+        that.session.columnDefs = xsvColumns;
         that.session.rowData = that.generateRowDataFromXSV(that.session.parsedXSV.data);
 
         that.session.rowData.reverse();
@@ -751,6 +759,7 @@ export default class EditorController {
       else {
         that.$timeout(function() {
           that.session.rowData = [];
+          that.session.columnDefs = angular.copy(that.gridOptions.columnDefs);
           that.setErrorXSV('Error: XSV Columns do not match Pattern Columns');
         }, 0);
       }
@@ -867,7 +876,8 @@ export default class EditorController {
       enableCellEdit: false,
       enableCellEditOnFocus: false,
       multiSelect: false,
-      rowTemplate: 'TERowTemplate'
+      rowTemplate: 'TERowTemplate',
+      // keyDownOverrides: [{keyCode: 27}]
     };
 
     this.$scope.noResults = false;
@@ -897,7 +907,6 @@ export default class EditorController {
       });
 
       gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
-        // console.log('viewPortKeyDown', event.keyCode, event);
         var row = newRowCol.row;
         var col = newRowCol.col;
         if (event.keyCode === 32) {
