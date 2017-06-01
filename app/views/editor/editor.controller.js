@@ -100,6 +100,49 @@ export default class EditorController {
     return JSON.stringify(Object.keys(o));
   }
 
+
+  getRowTitle() {
+    var cellNav = this.gridApi.cellNav;
+    var cell = cellNav.getFocusedCell();
+    var label = '';
+    if (cell) {
+      var text = this.session.parsedPattern.name.text;
+      var vars = this.session.parsedPattern.name.vars;
+
+      ({label} = this.applySubstitution(cell.row, text, vars));
+    }
+
+    return label;
+  }
+
+  getRowURL() {
+    var cellNav = this.gridApi.cellNav;
+    var cell = cellNav.getFocusedCell();
+    var label = '';
+    if (cell) {
+      var text = this.session.parsedPattern.def.text;
+      var vars = this.session.parsedPattern.def.vars;
+
+      ({label} = this.applySubstitution(cell.row, text, vars));
+    }
+
+    return label;
+  }
+
+  getRowDetails() {
+    var cellNav = this.gridApi.cellNav;
+    var cell = cellNav.getFocusedCell();
+    var label = '';
+    if (cell) {
+      var text = this.session.parsedPattern.def.text;
+      var vars = this.session.parsedPattern.def.vars;
+
+      ({label} = this.applySubstitution(cell.row, text, vars));
+    }
+
+    return label;
+  }
+
   getCellTitle() {
     var result = '';
     if (this.gridApi) {
@@ -184,6 +227,43 @@ export default class EditorController {
     }
   }
 
+  applySubstitution(row, text, vars) {
+    var textFragments = text.split('%s');
+    var syntheticLabel = '';
+    var usedVars = 0;
+    for (var i = 0; i < vars.length; ++i) {
+      var labelColumnName = vars[i] + ' label';
+      var substitution = row.entity[labelColumnName];
+
+      if (substitution) {
+        ++usedVars;
+      }
+      else {
+        substitution = '?';
+      }
+      syntheticLabel += textFragments[i] + substitution;
+    }
+    syntheticLabel += textFragments[i];
+
+    return {
+      label: syntheticLabel,
+      complete: (usedVars === vars.length)
+    };
+  }
+
+  updateIRILabelForRow(row) {
+    var that = this;
+    if (that.session.parsedPattern && that.session.parsedPattern.name) {
+      var text = that.session.parsedPattern.name.text;
+      var vars = that.session.parsedPattern.name.vars;
+
+      var {label, complete} = this.applySubstitution(row, text, vars);
+      if (complete) {
+        row.entity['iri label'] = label;
+      }
+    }
+  }
+
   termSelected(item, model, label, event) {
     var that = this;
     var cellNav = this.gridApi.cellNav;
@@ -216,32 +296,15 @@ export default class EditorController {
       cell.row.entity[cellName] = cellValue;
     }
 
-    console.log('termSelected', acEntry, cellName, cellValue, cell.row.entity);
+    that.updateIRILabelForRow(cell.row);
 
-    if (that.session.parsedPattern && that.session.parsedPattern.name) {
-      var text = that.session.parsedPattern.name.text;
-      var vars = that.session.parsedPattern.name.vars;
-      var textFragments = text.split('%s');
-      console.log('text/vars', text, vars, textFragments);
-
-      var syntheticLabel = '';
-      for (var i = 0; i < vars.length; ++i) {
-        var labelColumnName = vars[i] + ' label';
-        syntheticLabel += textFragments[i] + cell.row.entity[labelColumnName];
-      }
-      syntheticLabel += textFragments[i];
-
-      cell.row.entity['iri label'] = syntheticLabel;
-    }
-
-    this.$timeout(function() {
-      that.$scope.gridApi.cellNav.scrollToFocus(
-        cell.row.entity,
-        cell.col.colDef);
-      }, 250);
+    // this.$timeout(function() {
+    //   that.$scope.gridApi.cellNav.scrollToFocus(
+    //     cell.row.entity,
+    //     cell.col.colDef);
+    //   }, 250);
 
     //   $scope.gridApi.cellNav.scrollToFocus( row, $scope.gridOptions.columnDefs[colIndex]);
-
 
     this.$scope.$broadcast(this.uiGridEditConstants.events.END_CELL_EDIT);
   }
@@ -341,16 +404,13 @@ export default class EditorController {
       }, 10);
 
 
-      that.$timeout(function() {
-        that.$scope.gridApi.cellNav.scrollToFocus(
-          row.entity,
-          col.colDef).then(function(rr) {
-            // console.log('s2f');
-          });
-      }, 50);
-
-
-
+      // that.$timeout(function() {
+      //   that.$scope.gridApi.cellNav.scrollToFocus(
+      //     row.entity,
+      //     col.colDef).then(function(rr) {
+      //       // console.log('s2f');
+      //     });
+      // }, 50);
 
       // that.$scope.gridApi.cellNav.scrollToFocus(
       //   row.entity,
@@ -560,14 +620,14 @@ export default class EditorController {
         displayName: f,
         minWidth: 100,
         width: 100,
-        // maxWidth: 120,
+        // maxWidth: 200,
         enableCellEdit: false,
         enableCellEditOnFocus: false,
         visible: visible
       };
 
       if (f.endsWith(' label')) {
-        result.width = null;
+        result.width = 200;
       }
 
       if (that.isAutocompleteColumn(f)) {
@@ -645,7 +705,7 @@ export default class EditorController {
         result = false;
       }
       else {
-        console.log('compare', patternColumns, xsvColumns);
+        // console.log('compare', patternColumns, xsvColumns);
         result = _.isEqual(patternColumns, xsvColumns);
       }
     }
@@ -689,8 +749,10 @@ export default class EditorController {
         }, 0);
       }
       else {
-        that.session.rowData = [];
-        that.setErrorXSV('Error: XSV Columns do not match Pattern Columns');
+        that.$timeout(function() {
+          that.session.rowData = [];
+          that.setErrorXSV('Error: XSV Columns do not match Pattern Columns');
+        }, 0);
       }
     });
   }
@@ -839,9 +901,9 @@ export default class EditorController {
         var row = newRowCol.row;
         var col = newRowCol.col;
         if (event.keyCode === 32) {
-          that.$scope.gridApi.cellNav.scrollToFocus(
-            row.entity,
-            that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
+          // that.$scope.gridApi.cellNav.scrollToFocus(
+          //   row.entity,
+          //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
         }
         else if (event.keyCode === 27) {
           that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
