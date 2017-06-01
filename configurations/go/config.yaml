@@ -41,6 +41,9 @@ defaultPatterns:
   - url: 'configurations/go/activator_activity.yaml'
     title: 'Activator Activity'
     type: 'yaml'
+  - url: 'configurations/go/membrane_region.yaml'
+    title: 'Membrane Region'
+    type: 'yaml'
 
 defaultXSVs:
   - url: 'configurations/go/activator_activity.tsv'
