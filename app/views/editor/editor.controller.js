@@ -52,7 +52,7 @@ export default class EditorController {
           that.examplesPattern = session.parsedConfig.defaultPatterns;
         }
         if (that.examplesPattern.length > 0) {
-          session.defaultpatternURL = that.examplesPattern[0].url;
+          session.defaultPatternURL = that.examplesPattern[0].url;
         }
       }
 
@@ -104,9 +104,10 @@ export default class EditorController {
     var cellNav = this.gridApi.cellNav;
     var cell = cellNav.getFocusedCell();
     var label = '';
-    if (cell) {
-      var text = this.session.parsedPattern.name.text;
-      var vars = this.session.parsedPattern.name.vars;
+    var pattern = this.session.parsedPattern;
+    if (cell && pattern) {
+      var text = pattern.name.text;
+      var vars = pattern.name.vars;
 
       ({label} = this.applySubstitution(cell.row, text, vars));
     }
@@ -118,9 +119,10 @@ export default class EditorController {
     var cellNav = this.gridApi.cellNav;
     var cell = cellNav.getFocusedCell();
     var label = '';
-    if (cell) {
-      var text = this.session.parsedPattern.def.text;
-      var vars = this.session.parsedPattern.def.vars;
+    var pattern = this.session.parsedPattern;
+    if (cell && pattern) {
+      var text = pattern.name.text;
+      var vars = pattern.name.vars;
 
       ({label} = this.applySubstitution(cell.row, text, vars));
     }
@@ -132,9 +134,10 @@ export default class EditorController {
     var cellNav = this.gridApi.cellNav;
     var cell = cellNav.getFocusedCell();
     var label = '';
-    if (cell) {
-      var text = this.session.parsedPattern.def.text;
-      var vars = this.session.parsedPattern.def.vars;
+    var pattern = this.session.parsedPattern;
+    if (cell && pattern) {
+      var text = pattern.name.text;
+      var vars = pattern.name.vars;
 
       ({label} = this.applySubstitution(cell.row, text, vars));
     }
@@ -436,29 +439,33 @@ export default class EditorController {
   parsedConfig() {
     var that = this;
     var searchParams = that.$location.search();
-    var patternUrl;
+    var patternURL;
     if (searchParams.yaml) {
-      patternUrl = searchParams.yaml;
+      patternURL = searchParams.yaml;
     }
-    else if (that.session.defaultpatternURL) {
-      patternUrl = that.session.defaultpatternURL;
+    else if (that.session.defaultPatternURL) {
+      patternURL = that.session.defaultPatternURL;
     }
 
     function patternLoaded() {
-      var xsvUrl;
+      // console.log('patternLoaded', searchParams.xsv, that.session.defaultXSVURL);
+      var xsvURL;
       if (searchParams.xsv) {
-        xsvUrl = searchParams.xsv;
+        xsvURL = searchParams.xsv;
       }
       else if (that.session.defaultXSVURL) {
-        xsvUrl = that.session.defaultXSVURL;
+        xsvURL = that.session.defaultXSVURL;
       }
-      if (xsvUrl) {
-        that.loadURLXSV(xsvUrl);
+      if (xsvURL) {
+        that.loadURLXSV(xsvURL);
+      }
+      else {
+        that.loadNewXSV();
       }
     }
 
-    if (patternUrl) {
-      that.loadURLPattern(patternUrl, patternLoaded);
+    if (patternURL) {
+      that.loadURLPattern(patternURL, patternLoaded);
     }
     else {
       patternLoaded();
@@ -529,10 +536,12 @@ export default class EditorController {
         fields.push(that.stripQuotes(k));
         fields.push(that.stripQuotes(k) + ' label');
       });
+
+      that.loadNewXSV();
+      // that.session.rowData = [];
+      // that.gridOptions.data = that.session.rowData;
       that.session.columnDefs = that.generateColumnDefsFromFields(fields, true);
-      that.session.rowData = [];
       that.gridOptions.columnDefs = angular.copy(that.session.columnDefs);
-      that.gridOptions.data = that.session.rowData;
       that.setErrorPattern(null);
       that.loadNewXSV();
       if (continuation) {
@@ -742,7 +751,7 @@ export default class EditorController {
         }
       }
       else {
-        console.log('No pattern used. Generate columns from XSV', xsvColumns);
+        console.log('No pattern used. Generate columns from XSV', xsvColumns, that.session.parsedXSV);
       }
 
       if (columnsMatch) {
@@ -758,7 +767,9 @@ export default class EditorController {
       }
       else {
         that.$timeout(function() {
-          that.session.rowData = [];
+          that.loadNewXSV();
+          // that.session.rowData = [];
+          // that.gridOptions.data = that.session.rowData;
           that.session.columnDefs = angular.copy(that.gridOptions.columnDefs);
           that.setErrorXSV('Error: XSV Columns do not match Pattern Columns');
         }, 0);
@@ -767,17 +778,24 @@ export default class EditorController {
   }
 
   loadNewXSV() {
+    // console.log('loadNewXSV', this.session.autocompleteRegistry, this.session.columnDefs);
     var that = this;
     this.session.sourceXSV = 'New XSV';
     this.session.titleXSV = 'New XSV';
     this.session.XSVURL = null;
     this.session.errorMessageXSV = null;
 
+    if (this.session.parsedConfig.patternless) {
+      var xsvColumns = this.generateColumnDefsFromFields(this.session.parsedConfig.defaultFields);
+      this.session.columnDefs = xsvColumns;
+      this.gridOptions.columnDefs = angular.copy(this.session.columnDefs);
+    }
     // var newRow = {};
     // _.each(that.session.columnDefs.slice(1), function(colDef) {
     //   newRow[colDef.field] = '';
     // });
-    that.session.rowData.splice(0, that.session.rowData.length);
+    this.session.rowData = [];
+    this.gridOptions.data = this.session.rowData;
     // console.log('loadNewXSV', that.session.columnDefs, that.session.rowData);
   }
 
