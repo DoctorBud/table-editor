@@ -1,8 +1,6 @@
 /* global angular */
 
 import _ from 'lodash';
-import yaml from 'js-yaml';
-import Papa from 'papaparse';
 const uuidv4 = require('uuid/v4');  // https://github.com/kelektiv/node-uuid
 
 if (!String.prototype.endsWith) {
@@ -34,15 +32,17 @@ export default class EditorController {
     this.uiGridEditConstants = uiGridEditConstants;
     this.examplesPattern = null;
     this.examplesXSV = null;
-
+    this.$scope.typeaheadAnchor = document.getElementById('typeahead-anchor');
     this.exportedXSV = null;
     this.session = session;
+    this.$scope.isOpenX = {};
+    this.$scope.noResults = {};
 
-    function completeInitialization() {
+    function completeInitialization(reloadSession) {
       session.showPatternSource = false;
       session.showPatternParsed = false;
-      that.setErrorPattern(null);
-      session.patternURL = null;
+      session.showXSVSource = false;
+      session.showXSVParsed = false;
 
       if (session.parsedConfig.patternless) {
         // console.log('patternless===true');
@@ -51,38 +51,44 @@ export default class EditorController {
         if (session.parsedConfig.defaultPatterns) {
           that.examplesPattern = session.parsedConfig.defaultPatterns;
         }
-        if (that.examplesPattern.length > 0) {
-          session.defaultPatternURL = that.examplesPattern[0].url;
+      }
+
+      if (reloadSession) {
+          session.defaultPatternURL = session.parsedConfig.patternURL;
+      }
+      else {
+        session.sourceXSV = '';
+        session.titleXSV = '';
+
+        that.setErrorPattern(null);
+        session.patternURL = null;
+        session.errorMessageXSV = null;
+        that.setErrorXSV(null);
+
+        if (!session.parsedConfig.patternless) {
+          if (that.examplesPattern && that.examplesPattern.length > 0) {
+            session.defaultPatternURL = that.examplesPattern[0].url;
+          }
         }
+
+        session.XSVURL = null;
+        if (session.parsedConfig.defaultXSVs) {
+          that.examplesXSV = session.parsedConfig.defaultXSVs;
+        }
+        session.defaultXSVURL = null;
+        that.parsedConfig();
       }
-
-      session.showXSVSource = false;
-      session.showXSVParsed = false;
-      session.sourceXSV = '';
-      session.titleXSV = '';
-      session.errorMessageXSV = null;
-      that.setErrorXSV(null);
-
-      session.XSVURL = null;
-      if (session.parsedConfig.defaultXSVs) {
-        that.examplesXSV = session.parsedConfig.defaultXSVs;
-      }
-      session.defaultXSVURL = null;
-
-      // if (that.examplesXSV && that.examplesXSV.length > 0) {
-      //   session.defaultXSVURL = that.examplesXSV[0].url;
-      // }
-
-      that.parsedConfig();
     }
 
     if (session.initialized) {
-      // console.log('session.initialized');
-      completeInitialization();
+      console.log('session.initialized', session);
+      completeInitialization(true);
     }
     else {
       console.log('!session.initialized');
-      that.$rootScope.$on('parsedConfig', completeInitialization);
+      that.$rootScope.$on('parsedConfig', function() {
+        completeInitialization(false);
+      });
     }
 
     this.$scope.$watch('editorCtrl.session.filePattern', function () {
@@ -176,7 +182,7 @@ export default class EditorController {
         var colName = cell.col.colDef.name;
         var row = cell.row.entity;
         var acEntry = this.session.autocompleteRegistry[colName];
-        if (acEntry) {
+        if (acEntry && acEntry.lookup_type !== 'inline') {
           var colId = row[acEntry.idColumn];
 
           if (colId) {
@@ -217,6 +223,18 @@ export default class EditorController {
   }
 
   getTerm(rowEntity, colName, val) {
+    // return new Promise(function(resolve, reject) {
+    //   const matches = [
+    //     {id: '111', label: 'ONE'},
+    //     {id: '222', label: 'TWO'},
+    //     {id: '333', label: 'THREE'},
+    //   ];
+    //   setTimeout(function() {
+    //     resolve(matches);
+    //   }, 20);
+    // });
+
+
     var acEntry = this.session.autocompleteRegistry[colName];
     var oldValue = rowEntity[colName];
 
@@ -278,8 +296,26 @@ export default class EditorController {
     }
   }
 
+  textareaKeydown(event) {
+    console.log('textareaKeydown', event);
+    if (event.keyCode === 27) {
+      this.$timeout( () => {
+        this.$scope.$broadcast(this.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+      }, 0);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    // else if (event.keyCode === 13) {
+    //   this.$timeout( () => {
+    //     this.$scope.$broadcast(this.uiGridEditConstants.events.BEGIN_CELL_EDIT);
+    //   }, 0);
+    //   event.stopPropagation();
+    //   event.preventDefault();
+    // }
+  }
+
   termSelected(item, model, label, event) {
-    // console.log('termSelected', item, model, label, this.gridApi);
+    console.log('termSelected', item, model, label, this.gridApi);
 
     var that = this;
     var cellNav = this.gridApi.cellNav;
@@ -441,10 +477,10 @@ export default class EditorController {
       patternURL = that.session.defaultPatternURL;
     }
 
-    // console.log('parsedConfig', searchParams, patternURL, that.session.defaultXSVURL);
+    console.log('parsedConfig', searchParams, patternURL, that.session.defaultXSVURL);
 
     function patternLoaded() {
-      // console.log('patternLoaded', searchParams.yaml, searchParams.xsv, patternURL, that.session.defaultXSVURL);
+      console.log('patternLoaded', searchParams.yaml, searchParams.xsv, patternURL, that.session.defaultXSVURL);
       var xsvURL;
       if (searchParams.xsv) {
         xsvURL = searchParams.xsv;
@@ -511,7 +547,7 @@ export default class EditorController {
   }
 
   loadSourcePattern(source, title, url, continuation) {
-    // console.log('loadSourcePattern', url, title, source.slice(0, 20));
+    console.log('loadSourcePattern', url, title, source.slice(0, 20));
     var that = this;
     this.session.sourcePattern = source;
     this.session.titlePattern = title;
@@ -551,7 +587,7 @@ export default class EditorController {
   }
 
   loadURLPattern(patternURL, continuation) {
-    // console.log('loadURLPattern', patternURL);
+    console.log('loadURLPattern', patternURL);
     var that = this;
     this.session.patternURL = patternURL;
     this.$http.get(patternURL, {withCredentials: false}).then(
@@ -566,6 +602,7 @@ export default class EditorController {
   }
 
   loadSourcePatternItem(source, title, url) {
+    console.log('loadSourcePatternItem', source, title, url);
     if (source) {
       this.loadSourcePattern(source, title, url);
     }
@@ -645,8 +682,15 @@ export default class EditorController {
         result.width = 150;
       }
 
-      if (that.isAutocompleteColumn(f)) {
+      if (that.isBooleanColumn(f)) {
         result.enableCellEditOnFocus = true;
+        result.cellTemplate = 'cellStateTemplate';
+        result.editableCellTemplate = 'cellStateBooleanTemplate';
+        result.enableCellEdit = true;
+        result.width = 55;
+      }
+      else if (that.isAutocompleteColumn(f)) {
+        result.enableCellEditOnFocus = false;
         result.cellTemplate = 'cellStateTemplate';
         result.editableCellTemplate = 'cellStateAutocompleteTemplate';
         result.enableCellEdit = true;
@@ -764,6 +808,7 @@ export default class EditorController {
         that.session.columnDefs = xsvColumns;
         that.session.rowData = that.generateRowDataFromXSV(that.session.parsedXSV.data);
 
+        // that.session.rowData.length = 20;
         that.session.rowData.reverse();
         that.gridOptions.columnDefs = angular.copy(that.session.columnDefs);
         that.gridOptions.data = that.session.rowData;
@@ -812,6 +857,7 @@ export default class EditorController {
 
 
   loadSourceXSV(source, title, url) {
+    console.log('loadSourceXSV', source, title, url);
     this.session.sourceXSV = source;
     this.session.titleXSV = title;
     this.session.XSVURL = url;
@@ -870,6 +916,16 @@ export default class EditorController {
 
   // Grid stuff
 
+  isBooleanColumn(f) {
+    var acEntry = this.session.autocompleteRegistry[f];
+    var result = acEntry &&
+                 acEntry.lookup_type === 'inline' &&
+                 acEntry.idColumn === 'NOT' &&
+                 acEntry.labelColumn === 'NOT';
+    // console.log('isBooleanColumn', f, acEntry);
+    return result;
+  }
+
   isAutocompleteColumn(f) {
     var acEntry = this.session.autocompleteRegistry[f];
     var result = !!acEntry;
@@ -885,13 +941,13 @@ export default class EditorController {
   }
 
   setSorting(enabled) {
-    this.gridOptions.enableSorting = enabled;
-    _.each(this.gridOptions.columnDefs, function(columnDef) {
-      if (columnDef.cellTemplate !== 'uigridActionCell') {
-        columnDef.enableSorting = enabled;
-      }
-    });
-    this.gridApi.core.notifyDataChange(this.uiGridConstants.dataChange.COLUMN);
+    // this.gridOptions.enableSorting = enabled;
+    // _.each(this.gridOptions.columnDefs, function(columnDef) {
+    //   if (columnDef.cellTemplate !== 'uigridActionCell') {
+    //     columnDef.enableSorting = enabled;
+    //   }
+    // });
+    // this.gridApi.core.notifyDataChange(this.uiGridConstants.dataChange.COLUMN);
   }
 
   setupGrid() {
@@ -906,13 +962,32 @@ export default class EditorController {
       enableCellEditOnFocus: false,
       multiSelect: false,
       rowTemplate: 'TERowTemplate',
-      // keyDownOverrides: [{keyCode: 27}]
+      keyDownOverrides: [
+        {keyCode: 27},
+        {keyCode: 13},
+        // {keyCode: 32},
+        ],
+      maxRowToShow: 5,
+      minRowsToShow: 5,
+      virtualizationThreshold: 5000000
     };
 
-    // this.$scope.noResults = false;
+    // this.gridOptions.customScroller =
+    //   function myScrolling(uiGridViewport, scrollHandler) {
+    //     uiGridViewport.on('scroll', function myScrollingOverride(event) {
+    //       console.log('scroll', uiGridViewport[0].scrollTop);
+    //       // that.$scope.scroll.top = uiGridViewport[0].scrollTop;
+    //       // that.$scope.scroll.left = uiGridViewport[0].scrollLeft;
+
+    //       // You should always pass the event to the callback since ui-grid needs it
+    //       scrollHandler(event);
+    //     });
+    //   };
+
     this.$scope.debugFormat = angular.bind(this, this.debugFormat);
     this.$scope.getTerm = angular.bind(this, this.getTerm);
     this.$scope.termSelected = angular.bind(this, this.termSelected);
+    this.$scope.textareaKeydown = angular.bind(this, this.textareaKeydown);
 
     this.lastCellEdited = null;
     this.gridOptions.onRegisterApi = function(gridApi) {
@@ -920,49 +995,85 @@ export default class EditorController {
       that.$scope.gridApi = gridApi;
 
       gridApi.edit.on.beginCellEdit(that.$scope, function(rowEntity, colDef) {
-        // console.log('beginCellEdit: ', rowEntity, colDef);
+        console.log('beginCellEdit: ', rowEntity, colDef);
         that.setSorting(false);
+        // var row = that.$scope.gridApi.grid.getVisibleRows()[0].entity;
+        // that.gridApi.core.scrollTo(
+        //   row,
+        //   that.gridOptions.columnDefs[0]);
+
+        // that.gridApi.core.scrollToIfNecessary(
+        //   rowEntity,
+        //   colDef);
+          // that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
       });
 
       gridApi.edit.on.afterCellEdit(that.$scope, function(rowEntity, colDef, newValue, oldValue) {
-        // console.log('afterCellEdit: ', rowEntity, colDef, newValue, oldValue);
+        console.log('afterCellEdit: ', rowEntity, colDef, newValue, oldValue);
         // rowEntity[colDef.name] = newValue;
         that.lastCellEdited = '[' + rowEntity.iri + '][' + colDef.name + ']: ' + oldValue + '-->' + newValue;
         that.setSorting(true);
       });
 
       gridApi.edit.on.cancelCellEdit(that.$scope, function(rowEntity, colDef) {
-        // console.log('cancelCellEdit: ', rowEntity, colDef);
+        console.log('cancelCellEdit: ', that.$scope.isOpenX, rowEntity, colDef);
+        that.$scope.isOpenX = {};
         that.setSorting(true);
       });
 
-      // gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
-      //   console.log('viewPortKeyDown', event.keyCode);
-      //   var row = newRowCol.row;
-      //   var col = newRowCol.col;
-      //   if (event.keyCode === 32) {
-      //     // that.$scope.gridApi.cellNav.scrollToFocus(
-      //     //   row.entity,
-      //     //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
-      //   }
-      //   else if (event.keyCode === 27) {
-      //     that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-      //   }
-      // });
+      if (gridApi.cellNav) {
+        gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
+          // console.log('viewPortKeyDown', event.keyCode, newRowCol);
+          var row = newRowCol.row;
+          var col = newRowCol.col;
+          if (event.keyCode === 32) {
+            console.log('SPACE');
+            event.stopPropagation();
+            event.preventDefault();
+            // that.$scope.gridApi.cellNav.scrollToFocus(
+            //   row.entity,
+            //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
+          }
+          else if (event.keyCode === 13) {
+            console.log('CR');
+            var row = that.gridOptions.data[0]; // that.$scope.gridApi.grid.getVisibleRows()[0].entity;
+            // that.gridApi.core.scrollToIfNecessary(
+            //   row,
+            //   that.gridOptions.columnDefs[0]);
 
-      gridApi.cellNav.on.navigate(that.$scope, function(newRowCol, oldRowCol) {
-        // console.log('xnavigate', oldRowCol, newRowCol, gridApi);
-        if (oldRowCol) {
-          // console.log('noresults:', 'noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid);
-          delete that.$scope['noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid];
-          gridApi.edit.raise.cancelCellEdit(oldRowCol.row.entity, oldRowCol.col.colDef);
-          // that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-          // that.$timeout(function() {
-          //   that.$scope.noResults = false;
-          //   that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-          // }, 0);
-        }
-      });
+
+            // that.$scope.$broadcast(that.uiGridEditConstants.events.BEGIN_CELL_EDIT);
+            event.stopPropagation();
+            event.preventDefault();
+            // that.$scope.gridApi.cellNav.scrollToFocus(
+            //   row.entity,
+            //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
+          }
+          else if (event.keyCode === 27) {
+            console.log('ESC');
+            that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+          }
+
+        });
+
+        gridApi.cellNav.on.navigate(that.$scope, function(newRowCol, oldRowCol) {
+          console.log('xnavigate', that.$scope.isOpenX, oldRowCol, newRowCol, gridApi);
+          if (oldRowCol) {
+            const openKey = oldRowCol.row.uid + '_' + oldRowCol.col.uid;
+            delete that.$scope.isOpenX[openKey];
+            console.log('isOpenX:',
+                openKey,
+                that.$scope.isOpenX[openKey]);
+            delete that.$scope.noResults[openKey];
+            gridApi.edit.raise.cancelCellEdit(oldRowCol.row.entity, oldRowCol.col.colDef);
+            // that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+            // that.$timeout(function() {
+            //   that.$scope.noResults = false;
+            //   that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+            // }, 0);
+          }
+        });
+      }
 
       that.$timeout(function() {
         if (that.session.columnDefs) {
