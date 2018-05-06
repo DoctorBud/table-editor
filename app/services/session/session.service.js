@@ -36,7 +36,7 @@ export default class SessionService {
     this.logoImage = null;
 
     let loc = this.$location;
-    this.baseURL = loc.protocol() + '://' + loc.host() + ':' + loc.port() + '/table-editor/';  //  + $location.path();
+    this.baseURL = loc.protocol() + '://' + loc.host() + ':' + loc.port() + loc.path();
     this.logoImage = null;
     this.configNames = [];
     this.configByName = {};
@@ -115,9 +115,9 @@ export default class SessionService {
     }
   }
 
-  loadSourceConfig(source, title, url) {
+  loadSourceConfig(source, title, url, continuation) {
     this.initializeState();
-    // console.log('loadSourceConfig', title, url, JSON.stringify(this.rowData));
+    console.log('loadSourceConfig', title, url, JSON.stringify(this.rowData));
     this.sourceConfig = source;
     this.titleConfig = title;
     this.configURL = url;
@@ -129,7 +129,12 @@ export default class SessionService {
     this.$location.search(search);
     var that = this;
     this.parseConfig(function() {
-      that.$rootScope.$broadcast('parsedConfig');
+      if (continuation) {
+        continuation();
+      }
+      else {
+        that.$rootScope.$broadcast('parsedConfig');
+      }
     });
   }
 
@@ -139,24 +144,29 @@ export default class SessionService {
     this.$http.get(configURL, {withCredentials: false}).then(
       function(result) {
         var configSource = result.data;
-        // console.log('configSource:', configSource);
-        var menuURL = configURL.replace(/config\.yaml$/, 'menu.yaml');
-        that.$http.get(menuURL, {withCredentials: false}).then(
-          function(menuResult) {
-            var menuSource = menuResult.data;
-            configSource += '\n';
-            configSource += menuSource;
-
-            // console.log('menuSource:', menuSource);
-            that.loadSourceConfig(configSource, configURL, configURL);
-          },
-          function(error) {
-            var errmsg = 'Warning: No menu.yaml available at: ' + menuURL + '\n\n' + JSON.stringify(error);
-            console.log(errmsg);
-            that.setErrorConfig(errmsg);
+        that.loadSourceConfig(configSource, configURL, configURL, function() {
+          if (that.parsedConfig.defaultPatterns || that.parsedConfig.defaultXSVs) {
+            console.log('defaults available. Skipping menu.yaml load. that', that);
             that.loadSourceConfig(configSource, configURL, configURL);
           }
-        );
+          else {
+            var menuURL = configURL.replace(/config\.yaml$/, 'menu.yaml');
+            that.$http.get(menuURL, {withCredentials: false}).then(
+              function(menuResult) {
+                var menuSource = menuResult.data;
+                configSource += '\n';
+                configSource += menuSource;
+                that.loadSourceConfig(configSource, configURL, configURL);
+              },
+              function(error) {
+                var errmsg = 'Warning: No menu.yaml available at: ' + menuURL + '\n\n' + JSON.stringify(error);
+                console.log(errmsg);
+                that.setErrorConfig(errmsg);
+                that.loadSourceConfig(configSource, configURL, configURL);
+              }
+            );
+          }
+        });
       },
       function(error) {
         that.setErrorConfig('Error loading URL ' + configURL + '\n\n' + JSON.stringify(error));
@@ -618,7 +628,7 @@ export default class SessionService {
         q: val,
         type: 'class',
         fieldList: 'iri,label,short_form,obo_id,ontology_name,ontology_prefix,description,type',
-        // local: true,
+        local: true,
         // ontology: ontologies,
         rows: 15
       };
