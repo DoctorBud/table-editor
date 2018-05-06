@@ -1,6 +1,10 @@
+#content {
+}
+
 .editor-container {
 	margin: 0;
 	padding: 0;
+  xheight: 50vh;
 }
 
 .ui-grid-viewport {
@@ -42,7 +46,7 @@
 
 .grid {
   width: 100%;
-  height: 50vh !important;
+  height: 70vh !important;
 }
 
 .grid .ui-grid-header-cell {
@@ -110,7 +114,6 @@
 }
 
 .ui-grid-cell .typeaheadcontainer {
-  // border:1px solid red;
   margin: 0;
   padding: 0;
   resize: none;
@@ -128,7 +131,7 @@
 }
 
 .typeahead-is-closed {
-  // border:5px solid green !important;
+  border:5px solid green !important;
 }
 
 .no-results {
@@ -168,3 +171,33 @@ button.btn.btn-compact {
   margin:0;
   padding:0;
 }
+
+.custom-popup-wrapper {
+  position: absolute;
+  top: 100%;
+  top: 100px;
+  left: 20px !important;
+  right: 20px !important;
+  z-index: 1000;
+  display: block;
+  background-color: #f9f9f9;
+}
+
+.custom-popup-wrapper > .message {
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+  color: #868686;
+}
+
+.custom-popup-wrapper > .dropdown-menu {
+  position: static;
+  float: none;
+  display: block;
+  min-width: 160px;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+

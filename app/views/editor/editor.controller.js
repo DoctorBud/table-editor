@@ -34,7 +34,7 @@ export default class EditorController {
     this.uiGridEditConstants = uiGridEditConstants;
     this.examplesPattern = null;
     this.examplesXSV = null;
-
+    this.$scope.typeaheadAnchor = document.getElementById('typeahead-anchor');
     this.exportedXSV = null;
     this.session = session;
 
@@ -51,7 +51,7 @@ export default class EditorController {
         if (session.parsedConfig.defaultPatterns) {
           that.examplesPattern = session.parsedConfig.defaultPatterns;
         }
-        if (that.examplesPattern.length > 0) {
+        if (that.examplesPattern && that.examplesPattern.length > 0) {
           session.defaultPatternURL = that.examplesPattern[0].url;
         }
       }
@@ -217,6 +217,18 @@ export default class EditorController {
   }
 
   getTerm(rowEntity, colName, val) {
+    // return new Promise(function(resolve, reject) {
+    //   const matches = [
+    //     {id: '111', label: 'ONE'},
+    //     {id: '222', label: 'TWO'},
+    //     {id: '333', label: 'THREE'},
+    //   ];
+    //   setTimeout(function() {
+    //     resolve(matches);
+    //   }, 20);
+    // });
+
+
     var acEntry = this.session.autocompleteRegistry[colName];
     var oldValue = rowEntity[colName];
 
@@ -276,6 +288,24 @@ export default class EditorController {
         row.entity['iri label'] = label;
       }
     }
+  }
+
+  textareaKeydown(event) {
+    console.log('textareaKeydown', event);
+    if (event.keyCode === 27) {
+      this.$timeout( () => {
+        this.$scope.$broadcast(this.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+      }, 0);
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    // else if (event.keyCode === 13) {
+    //   this.$timeout( () => {
+    //     this.$scope.$broadcast(this.uiGridEditConstants.events.BEGIN_CELL_EDIT);
+    //   }, 0);
+    //   event.stopPropagation();
+    //   event.preventDefault();
+    // }
   }
 
   termSelected(item, model, label, event) {
@@ -646,7 +676,7 @@ export default class EditorController {
       }
 
       if (that.isAutocompleteColumn(f)) {
-        result.enableCellEditOnFocus = true;
+        result.enableCellEditOnFocus = false;
         result.cellTemplate = 'cellStateTemplate';
         result.editableCellTemplate = 'cellStateAutocompleteTemplate';
         result.enableCellEdit = true;
@@ -885,13 +915,13 @@ export default class EditorController {
   }
 
   setSorting(enabled) {
-    this.gridOptions.enableSorting = enabled;
-    _.each(this.gridOptions.columnDefs, function(columnDef) {
-      if (columnDef.cellTemplate !== 'uigridActionCell') {
-        columnDef.enableSorting = enabled;
-      }
-    });
-    this.gridApi.core.notifyDataChange(this.uiGridConstants.dataChange.COLUMN);
+    // this.gridOptions.enableSorting = enabled;
+    // _.each(this.gridOptions.columnDefs, function(columnDef) {
+    //   if (columnDef.cellTemplate !== 'uigridActionCell') {
+    //     columnDef.enableSorting = enabled;
+    //   }
+    // });
+    // this.gridApi.core.notifyDataChange(this.uiGridConstants.dataChange.COLUMN);
   }
 
   setupGrid() {
@@ -906,13 +936,18 @@ export default class EditorController {
       enableCellEditOnFocus: false,
       multiSelect: false,
       rowTemplate: 'TERowTemplate',
-      // keyDownOverrides: [{keyCode: 27}]
+      keyDownOverrides: [
+        {keyCode: 27},
+        {keyCode: 13},
+        // {keyCode: 32},
+        ]
     };
 
     // this.$scope.noResults = false;
     this.$scope.debugFormat = angular.bind(this, this.debugFormat);
     this.$scope.getTerm = angular.bind(this, this.getTerm);
     this.$scope.termSelected = angular.bind(this, this.termSelected);
+    this.$scope.textareaKeydown = angular.bind(this, this.textareaKeydown);
 
     this.lastCellEdited = null;
     this.gridOptions.onRegisterApi = function(gridApi) {
@@ -920,49 +955,80 @@ export default class EditorController {
       that.$scope.gridApi = gridApi;
 
       gridApi.edit.on.beginCellEdit(that.$scope, function(rowEntity, colDef) {
-        // console.log('beginCellEdit: ', rowEntity, colDef);
+        console.log('beginCellEdit: ', rowEntity, colDef);
         that.setSorting(false);
+        // var row = that.$scope.gridApi.grid.getVisibleRows()[0].entity;
+        // that.gridApi.core.scrollTo(
+        //   row,
+        //   that.gridOptions.columnDefs[0]);
+
+        // that.gridApi.core.scrollToIfNecessary(
+        //   rowEntity,
+        //   colDef);
+          // that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
       });
 
       gridApi.edit.on.afterCellEdit(that.$scope, function(rowEntity, colDef, newValue, oldValue) {
-        // console.log('afterCellEdit: ', rowEntity, colDef, newValue, oldValue);
+        console.log('afterCellEdit: ', rowEntity, colDef, newValue, oldValue);
         // rowEntity[colDef.name] = newValue;
         that.lastCellEdited = '[' + rowEntity.iri + '][' + colDef.name + ']: ' + oldValue + '-->' + newValue;
         that.setSorting(true);
       });
 
       gridApi.edit.on.cancelCellEdit(that.$scope, function(rowEntity, colDef) {
-        // console.log('cancelCellEdit: ', rowEntity, colDef);
+        console.log('cancelCellEdit: ', rowEntity, colDef);
         that.setSorting(true);
       });
 
-      // gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
-      //   console.log('viewPortKeyDown', event.keyCode);
-      //   var row = newRowCol.row;
-      //   var col = newRowCol.col;
-      //   if (event.keyCode === 32) {
-      //     // that.$scope.gridApi.cellNav.scrollToFocus(
-      //     //   row.entity,
-      //     //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
-      //   }
-      //   else if (event.keyCode === 27) {
-      //     that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-      //   }
-      // });
+      if (gridApi.cellNav) {
+        gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
+          console.log('viewPortKeyDown', event.keyCode, newRowCol);
+          var row = newRowCol.row;
+          var col = newRowCol.col;
+          if (event.keyCode === 32) {
+            console.log('SPACE');
+            event.stopPropagation();
+            event.preventDefault();
+            // that.$scope.gridApi.cellNav.scrollToFocus(
+            //   row.entity,
+            //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
+          }
+          else if (event.keyCode === 13) {
+            console.log('CR');
+            var row = that.gridOptions.data[0]; // that.$scope.gridApi.grid.getVisibleRows()[0].entity;
+            that.gridApi.core.scrollToIfNecessary(
+              row,
+              that.gridOptions.columnDefs[0]);
 
-      gridApi.cellNav.on.navigate(that.$scope, function(newRowCol, oldRowCol) {
-        // console.log('xnavigate', oldRowCol, newRowCol, gridApi);
-        if (oldRowCol) {
-          // console.log('noresults:', 'noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid);
-          delete that.$scope['noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid];
-          gridApi.edit.raise.cancelCellEdit(oldRowCol.row.entity, oldRowCol.col.colDef);
-          // that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-          // that.$timeout(function() {
-          //   that.$scope.noResults = false;
-          //   that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
-          // }, 0);
-        }
-      });
+
+            // that.$scope.$broadcast(that.uiGridEditConstants.events.BEGIN_CELL_EDIT);
+            event.stopPropagation();
+            event.preventDefault();
+            // that.$scope.gridApi.cellNav.scrollToFocus(
+            //   row.entity,
+            //   that.$scope.gridApi.grid.columns[that.$scope.gridApi.grid.columns.length - 1]);
+          }
+          else if (event.keyCode === 27) {
+            console.log('ESC');
+            that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+          }
+
+        });
+
+        gridApi.cellNav.on.navigate(that.$scope, function(newRowCol, oldRowCol) {
+          console.log('xnavigate', oldRowCol, newRowCol, gridApi);
+          if (oldRowCol) {
+            // console.log('noresults:', 'noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid);
+            delete that.$scope['noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid];
+            gridApi.edit.raise.cancelCellEdit(oldRowCol.row.entity, oldRowCol.col.colDef);
+            // that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+            // that.$timeout(function() {
+            //   that.$scope.noResults = false;
+            //   that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
+            // }, 0);
+          }
+        });
+      }
 
       that.$timeout(function() {
         if (that.session.columnDefs) {

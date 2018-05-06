@@ -1,14 +1,4 @@
 <div class="editor-container container-fluid">
-<!--   <button
-    type="button"
-    title="Add Association"
-    class="btn btn-primary btn-xs xbtn-compact"
-    ng-click="editorCtrl.openGitHub()">
-    <i class="fa fa-github fa-fw"></i>
-  </button>
-
- -->
-
   <div class="row" ng-if="!editorCtrl.session.parsedConfig.patternless">
     <div class="col-xs-3">
       <div class="btn-group btn-group-block" uib-dropdown keyboard-nav>
@@ -175,6 +165,11 @@
 
   <div
     class="row"
+    id="typeahead-anchor">
+  </div>
+
+  <div
+    class="row"
     xng-hide="!editorCtrl.session.parsedXSV">
     <div class="col-xs-12">
       <div
@@ -190,7 +185,7 @@
     </div>
   </div>
 
-  <div id="bottom_of_page" style="height:400px;"></div>
+  <div id="bottom_of_page" style="height:20px;"></div>
 </div>
 
 <script type="text/ng-template" id="cellStateTemplate">
@@ -222,12 +217,61 @@
 
 <script type="text/ng-template" id="customTemplate.html">
   <a>
-
-<!--       <span style="display:inline-block;min-width:320px;width:320px;font-size:0.7em;font-style:bold;" ng-bind-html="match.model | json"></span>
--->
+<!--
+    <span style="display:inline-block;min-width:320px;width:320px;font-size:0.7em;font-style:bold;" ng-bind-html="match.model | json"></span>
+ -->
     <span style="display:inline-block;width:150px;font-size:0.9em;font-style:italic;" ng-bind-html="match.model.id | uibTypeaheadHighlight:query"></span>
     <span ng-bind-html="match.model.label | uibTypeaheadHighlight:query"></span>
   </a>
+</script>
+
+
+<script type="text/ng-template" id="customPopupTemplate.html">
+  <div class="custom-popup-wrapper"
+     xng-style="{top: position().top+'px', left: position().left+'px'}"
+     ng-show="isOpen() && !moveInProgress"
+     aria-hidden="{{!isOpen()}}">
+    <ul class="dropdown-menu" role="listbox">
+      <li class="uib-typeahead-match" ng-repeat="match in matches track by $index" ng-class="{active: isActive($index) }"
+        ng-mouseenter="selectActive($index)" ng-click="selectMatch($index)" role="option" id="{{::match.id}}">
+        <div uib-typeahead-match index="$index" match="match" query="query" template-url="templateUrl"></div>
+      </li>
+    </ul>
+  </div>
+</script>
+
+
+
+<script type="text/ng-template" id="cellStateAutocompleteTemplateDebug">
+  <div
+    class="ui-grid-cell-contents table-editor-default-cell">
+    <form
+      name="inputForm">
+      <textarea
+        type="INPUT_TYPE"
+        ng-keydown="grid.appScope.textareaKeydown($event)"
+        ng-model="MODEL_COL_FIELD"
+        ng-trim="false"
+        zshow-list
+        typeahead-popup-template-url="customPopupTemplate.html"
+        uib-typeahead="term as term.label for term in grid.appScope.getTerm(row.entity, col.colDef.name, $viewValue)"
+        typeahead-append-to="grid.appScope.typeaheadAnchor"
+        typeahead-focus-on-select="false"
+        typeahead-select-on-blur="false"
+        typeahead-loading="loadingItems"
+        typeahead-no-results="grid.appScope['noResults' + row.uid + '_' + col.uid]"
+        typeahead-template-url="customTemplate.html"
+        typeahead-editable="false"
+        typeahead-min-length=0
+        typeahead-is-open="isOpenx"
+        typeahead-on-select="grid.appScope.termSelected($item, $model, $label, $event)"
+        class="typeaheadcontrol form-control"
+        ng-class="isOpenx ? 'typeahead-is-open' : 'typeahead-is-closed'">
+      </textarea>
+
+
+    </form>
+  </div>
 </script>
 
 
@@ -240,35 +284,24 @@
     </div>
     <textarea
       type="text"
-      ng-model-options="{
-        'updateOn': 'default blur',
-        'debounce': {
-          'default': 250,
-          'blur': 0
-        }
-      }"
+      ng-keydown="grid.appScope.textareaKeydown($event)"
       ng-model="MODEL_COL_FIELD"
       ng-trim="false"
       show-list
-      xshow-list-new
-      xtypeahead
-      xbud-grid-editor
-      xui-grid-editor
-      xtypeahead-focus
+      typeahead-popup-template-url="customPopupTemplate.html"
       uib-typeahead="term as term.label for term in grid.appScope.getTerm(row.entity, col.colDef.name, $viewValue)"
-      typeahead-append-to-body="true"
-      xtypeahead-focus-on-select="true"
-      xtypeahead-select-on-blur="false"
+      typeahead-append-to="grid.appScope.typeaheadAnchor"
+      typeahead-focus-on-select="false"
+      typeahead-select-on-blur="false"
       typeahead-loading="loadingItems"
       typeahead-no-results="grid.appScope['noResults' + row.uid + '_' + col.uid]"
       typeahead-template-url="customTemplate.html"
-      typeahead-editable="true"
+      typeahead-editable="false"
       typeahead-min-length=0
-      xtypeahead-is-open="isOpen"
-      typeahead-is-open="'true'"
+      typeahead-is-open="isOpenx"
       typeahead-on-select="grid.appScope.termSelected($item, $model, $label, $event)"
       class="typeaheadcontrol form-control"
-      ng-class="isOpen ? 'typeahead-is-open' : 'typeahead-is-closed'">
+      ng-class="isOpenx ? 'typeahead-is-open' : 'typeahead-is-closed'">
     </textarea>
     <div class="no-results"
       xng-init="grid.appScope['noResults' + row.uid + '_' + col.uid] = true"
