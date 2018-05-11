@@ -4,7 +4,6 @@
 .editor-container {
 	margin: 0;
 	padding: 0;
-  xheight: 50vh;
 }
 
 .ui-grid-viewport {
@@ -44,10 +43,77 @@
   padding: 1px 3px !important;
 }
 
+
 .grid {
   width: 100%;
-  height: 70vh !important;
+  height: 100%;
 }
+
+
+// @media (min-width: 1024px) {
+//   .grid {
+//     width: 772px;
+//   }
+// }
+
+// @media (min-width: 1280px) {
+//   .grid {
+//     width: 972px;
+//   }
+// }
+
+$header-height: 140px;
+$grid-header-height: 30px;
+$row-height: 85px;
+
+$rows1: $row-height * 5;
+$break1: $header-height + $grid-header-height + $rows1;
+$rows2: $row-height * 7;
+$break2: $header-height + $grid-header-height + $rows2;
+$rows3: $row-height * 9;
+$break3: $header-height + $grid-header-height + $rows3;
+$rows4: $row-height * 11;
+$break4: $header-height + $grid-header-height + $rows4;
+$rows5: $row-height * 13;
+$break5: $header-height + $grid-header-height + $rows5;
+
+@media (min-height: $break1) {
+  .grid {
+    height: $rows1 !important;
+    // border:5px solid red !important;
+  }
+}
+
+@media (min-height: $break2) {
+  .grid {
+    height: $rows2 !important;
+    // border:5px solid green !important;
+  }
+}
+
+@media (min-height: $break3) {
+  .grid {
+    height: $rows3 !important;
+    // border:5px solid purple !important;
+  }
+}
+
+
+@media (min-height: $break4) {
+  .grid {
+    height: $rows4 !important;
+    // border:5px solid cyan !important;
+  }
+}
+
+@media (min-height: $break5) {
+  .grid {
+    height: $rows5 !important;
+    // border:5px solid orange !important;
+  }
+}
+
+
 
 .grid .ui-grid-header-cell {
   font-size:12px;
@@ -68,7 +134,6 @@
 }
 
 .ui-grid-cell-contents {
-  font-size:12px;
   line-height:1em;
   // border: 1px solid red;
   word-wrap: break-word;
@@ -82,35 +147,30 @@
 }
 
 .ui-grid-cell .table-editor-default-cell {
-  // border:1px solid yellow;
+  font-size:14px;
+  font-weight: 500;
   margin: 0 !important;
-  padding: 2px;
+  padding: 1px !important;
 }
 
+
 .ui-grid-cell form {
-  // border:1px solid purple;
+  border:none;
   width:100%;
   height:100%;
   margin: 0 !important;
   padding: 0 !important;
 }
 
-// .ui-grid-cell form input {
-//   word-wrap: break-word;
-//   white-space: normal !important;
-//   background:5px solid cyan !important;
-//   border:5px solid cyan !important;
-// }
-
 .ui-grid-cell form textarea {
+  border:none;
   resize: none;
   width:100%;
-  height:100%;
-  margin: 0 !important;
+  height: 74px;
+  margin: 1px !important;
   padding: 0 !important;
   word-wrap: break-word;
   white-space: normal !important;
-  // border:1px solid cyan !important;
 }
 
 .ui-grid-cell .typeaheadcontainer {
@@ -118,21 +178,8 @@
   padding: 0;
   resize: none;
   word-wrap: break-word;
-  // display: table;
-  // margin-right: auto;
-  // margin-left: auto;
-  // width:95%;
-  // height:100%;
-  // border:1px solid red;
 }
 
-.typeahead-is-open {
-  border:5px solid red !important;
-}
-
-.typeahead-is-closed {
-  border:5px solid green !important;
-}
 
 .no-results {
   top:-20px;
@@ -142,19 +189,17 @@
   border:1px solid lightgray;
   background:lightyellow;
   position:relative;
-  z-index:5500;
+  z-index:55;
   margin:1px;
   padding:1px;
 }
 
-.ui-grid-cell .typeaheadcontainer textarea {
-  // margin: 0 !important;
-  font-size:12px;
-  font-weight: 500;
-  padding: 0;
-  margin: 0;
-  height: 80px;
+.ui-grid-cell .typeaheadcontrol {
+  border:1px solid red;
+  width:100%;
+  height:100%;
 }
+
 
 // .ui-grid-cell .typeaheadcontrol {
 //   width:100%;
@@ -172,15 +217,30 @@ button.btn.btn-compact {
   padding:0;
 }
 
+
+.typeahead-is-open {
+  border:2px solid lightblue !important;
+  position: fixed !important;
+  top: -100px !important;
+  left: 0 !important;
+  right: 0 !important;
+  height:40px !important;
+}
+
+.typeahead-is-closed {
+  border:2px solid lightblue !important;
+  height: 72px !important;
+}
+
 .custom-popup-wrapper {
   position: absolute;
-  top: 100%;
-  top: 100px;
-  left: 20px !important;
-  right: 20px !important;
-  z-index: 1000;
+  top: 88px;
+  left: 50px !important;
+  right: 50px !important;
+  z-index: 10;
   display: block;
   background-color: #f9f9f9;
+  box-shadow: 5px 10px 8px 10px #888888;
 }
 
 .custom-popup-wrapper > .message {
@@ -200,4 +260,15 @@ button.btn.btn-compact {
   box-shadow: none;
 }
 
+.row.detail-header {
+  height:50px;
+  padding:0;
+  margin:1px;
+  border:2px solid lightgray;
+  border-radius:5px;
+  background:ivory;
+}
 
+.zero-z {
+  z-index: 0 !important;
+}

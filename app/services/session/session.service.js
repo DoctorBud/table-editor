@@ -628,7 +628,7 @@ export default class SessionService {
         q: val,
         type: 'class',
         fieldList: 'iri,label,short_form,obo_id,ontology_name,ontology_prefix,description,type',
-        // local: true,
+        local: true,
         // ontology: ontologies,
         rows: 15
       };

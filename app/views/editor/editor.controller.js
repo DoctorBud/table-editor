@@ -37,6 +37,8 @@ export default class EditorController {
     this.$scope.typeaheadAnchor = document.getElementById('typeahead-anchor');
     this.exportedXSV = null;
     this.session = session;
+    this.$scope.isOpenX = {};
+    this.$scope.noResults = {};
 
     function completeInitialization() {
       session.showPatternSource = false;
@@ -309,7 +311,7 @@ export default class EditorController {
   }
 
   termSelected(item, model, label, event) {
-    // console.log('termSelected', item, model, label, this.gridApi);
+    console.log('termSelected', item, model, label, this.gridApi);
 
     var that = this;
     var cellNav = this.gridApi.cellNav;
@@ -940,10 +942,24 @@ export default class EditorController {
         {keyCode: 27},
         {keyCode: 13},
         // {keyCode: 32},
-        ]
+        ],
+      maxRowToShow: 5,
+      minRowsToShow: 5,
+      virtualizationThreshold: 500000
     };
 
-    // this.$scope.noResults = false;
+    // this.gridOptions.customScroller =
+    //   function myScrolling(uiGridViewport, scrollHandler) {
+    //     uiGridViewport.on('scroll', function myScrollingOverride(event) {
+    //       console.log('scroll', uiGridViewport[0].scrollTop);
+    //       // that.$scope.scroll.top = uiGridViewport[0].scrollTop;
+    //       // that.$scope.scroll.left = uiGridViewport[0].scrollLeft;
+
+    //       // You should always pass the event to the callback since ui-grid needs it
+    //       scrollHandler(event);
+    //     });
+    //   };
+
     this.$scope.debugFormat = angular.bind(this, this.debugFormat);
     this.$scope.getTerm = angular.bind(this, this.getTerm);
     this.$scope.termSelected = angular.bind(this, this.termSelected);
@@ -976,7 +992,8 @@ export default class EditorController {
       });
 
       gridApi.edit.on.cancelCellEdit(that.$scope, function(rowEntity, colDef) {
-        console.log('cancelCellEdit: ', rowEntity, colDef);
+        console.log('cancelCellEdit: ', that.$scope.isOpenX, rowEntity, colDef);
+        that.$scope.isOpenX = {};
         that.setSorting(true);
       });
 
@@ -996,9 +1013,9 @@ export default class EditorController {
           else if (event.keyCode === 13) {
             console.log('CR');
             var row = that.gridOptions.data[0]; // that.$scope.gridApi.grid.getVisibleRows()[0].entity;
-            that.gridApi.core.scrollToIfNecessary(
-              row,
-              that.gridOptions.columnDefs[0]);
+            // that.gridApi.core.scrollToIfNecessary(
+            //   row,
+            //   that.gridOptions.columnDefs[0]);
 
 
             // that.$scope.$broadcast(that.uiGridEditConstants.events.BEGIN_CELL_EDIT);
@@ -1016,10 +1033,14 @@ export default class EditorController {
         });
 
         gridApi.cellNav.on.navigate(that.$scope, function(newRowCol, oldRowCol) {
-          console.log('xnavigate', oldRowCol, newRowCol, gridApi);
+          console.log('xnavigate', that.$scope.isOpenX, oldRowCol, newRowCol, gridApi);
           if (oldRowCol) {
-            // console.log('noresults:', 'noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid);
-            delete that.$scope['noResults' + oldRowCol.row.uid + '_' + oldRowCol.col.uid];
+            const openKey = oldRowCol.row.uid + '_' + oldRowCol.col.uid;
+            delete that.$scope.isOpenX[openKey];
+            console.log('isOpenX:',
+                openKey,
+                that.$scope.isOpenX[openKey]);
+            delete that.$scope.noResults[openKey];
             gridApi.edit.raise.cancelCellEdit(oldRowCol.row.entity, oldRowCol.col.colDef);
             // that.$scope.$broadcast(that.uiGridEditConstants.events.CANCEL_CELL_EDIT);
             // that.$timeout(function() {
