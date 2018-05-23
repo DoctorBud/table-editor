@@ -36,7 +36,7 @@ export default class SessionService {
     this.logoImage = null;
 
     let loc = this.$location;
-    this.baseURL = loc.protocol() + '://' + loc.host() + ':' + loc.port() + '/table-editor/';  //  + $location.path();
+    this.baseURL = loc.protocol() + '://' + loc.host() + ':' + loc.port() + loc.path();
     this.logoImage = null;
     this.configNames = [];
     this.configByName = {};
@@ -117,7 +117,7 @@ export default class SessionService {
 
   loadSourceConfig(source, title, url, continuation) {
     this.initializeState();
-    // console.log('loadSourceConfig', title, url, JSON.stringify(this.rowData));
+    console.log('loadSourceConfig', title, url, JSON.stringify(this.rowData));
     this.sourceConfig = source;
     this.titleConfig = title;
     this.configURL = url;

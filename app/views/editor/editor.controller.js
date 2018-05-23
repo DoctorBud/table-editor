@@ -1,8 +1,6 @@
 /* global angular */
 
 import _ from 'lodash';
-import yaml from 'js-yaml';
-import Papa from 'papaparse';
 const uuidv4 = require('uuid/v4');  // https://github.com/kelektiv/node-uuid
 
 if (!String.prototype.endsWith) {
@@ -40,11 +38,11 @@ export default class EditorController {
     this.$scope.isOpenX = {};
     this.$scope.noResults = {};
 
-    function completeInitialization() {
+    function completeInitialization(reloadSession) {
       session.showPatternSource = false;
       session.showPatternParsed = false;
-      that.setErrorPattern(null);
-      session.patternURL = null;
+      session.showXSVSource = false;
+      session.showXSVParsed = false;
 
       if (session.parsedConfig.patternless) {
         // console.log('patternless===true');
@@ -53,38 +51,44 @@ export default class EditorController {
         if (session.parsedConfig.defaultPatterns) {
           that.examplesPattern = session.parsedConfig.defaultPatterns;
         }
-        if (that.examplesPattern && that.examplesPattern.length > 0) {
-          session.defaultPatternURL = that.examplesPattern[0].url;
+      }
+
+      if (reloadSession) {
+          session.defaultPatternURL = session.parsedConfig.patternURL;
+      }
+      else {
+        session.sourceXSV = '';
+        session.titleXSV = '';
+
+        that.setErrorPattern(null);
+        session.patternURL = null;
+        session.errorMessageXSV = null;
+        that.setErrorXSV(null);
+
+        if (!session.parsedConfig.patternless) {
+          if (that.examplesPattern && that.examplesPattern.length > 0) {
+            session.defaultPatternURL = that.examplesPattern[0].url;
+          }
         }
+
+        session.XSVURL = null;
+        if (session.parsedConfig.defaultXSVs) {
+          that.examplesXSV = session.parsedConfig.defaultXSVs;
+        }
+        session.defaultXSVURL = null;
+        that.parsedConfig();
       }
-
-      session.showXSVSource = false;
-      session.showXSVParsed = false;
-      session.sourceXSV = '';
-      session.titleXSV = '';
-      session.errorMessageXSV = null;
-      that.setErrorXSV(null);
-
-      session.XSVURL = null;
-      if (session.parsedConfig.defaultXSVs) {
-        that.examplesXSV = session.parsedConfig.defaultXSVs;
-      }
-      session.defaultXSVURL = null;
-
-      // if (that.examplesXSV && that.examplesXSV.length > 0) {
-      //   session.defaultXSVURL = that.examplesXSV[0].url;
-      // }
-
-      that.parsedConfig();
     }
 
     if (session.initialized) {
-      // console.log('session.initialized');
-      completeInitialization();
+      console.log('session.initialized', session);
+      completeInitialization(true);
     }
     else {
       console.log('!session.initialized');
-      that.$rootScope.$on('parsedConfig', completeInitialization);
+      that.$rootScope.$on('parsedConfig', function() {
+        completeInitialization(false);
+      });
     }
 
     this.$scope.$watch('editorCtrl.session.filePattern', function () {
@@ -178,7 +182,7 @@ export default class EditorController {
         var colName = cell.col.colDef.name;
         var row = cell.row.entity;
         var acEntry = this.session.autocompleteRegistry[colName];
-        if (acEntry) {
+        if (acEntry && acEntry.lookup_type !== 'inline') {
           var colId = row[acEntry.idColumn];
 
           if (colId) {
@@ -473,10 +477,10 @@ export default class EditorController {
       patternURL = that.session.defaultPatternURL;
     }
 
-    // console.log('parsedConfig', searchParams, patternURL, that.session.defaultXSVURL);
+    console.log('parsedConfig', searchParams, patternURL, that.session.defaultXSVURL);
 
     function patternLoaded() {
-      // console.log('patternLoaded', searchParams.yaml, searchParams.xsv, patternURL, that.session.defaultXSVURL);
+      console.log('patternLoaded', searchParams.yaml, searchParams.xsv, patternURL, that.session.defaultXSVURL);
       var xsvURL;
       if (searchParams.xsv) {
         xsvURL = searchParams.xsv;
@@ -543,7 +547,7 @@ export default class EditorController {
   }
 
   loadSourcePattern(source, title, url, continuation) {
-    // console.log('loadSourcePattern', url, title, source.slice(0, 20));
+    console.log('loadSourcePattern', url, title, source.slice(0, 20));
     var that = this;
     this.session.sourcePattern = source;
     this.session.titlePattern = title;
@@ -583,7 +587,7 @@ export default class EditorController {
   }
 
   loadURLPattern(patternURL, continuation) {
-    // console.log('loadURLPattern', patternURL);
+    console.log('loadURLPattern', patternURL);
     var that = this;
     this.session.patternURL = patternURL;
     this.$http.get(patternURL, {withCredentials: false}).then(
@@ -598,6 +602,7 @@ export default class EditorController {
   }
 
   loadSourcePatternItem(source, title, url) {
+    console.log('loadSourcePatternItem', source, title, url);
     if (source) {
       this.loadSourcePattern(source, title, url);
     }
@@ -677,7 +682,14 @@ export default class EditorController {
         result.width = 150;
       }
 
-      if (that.isAutocompleteColumn(f)) {
+      if (that.isBooleanColumn(f)) {
+        result.enableCellEditOnFocus = true;
+        result.cellTemplate = 'cellStateTemplate';
+        result.editableCellTemplate = 'cellStateBooleanTemplate';
+        result.enableCellEdit = true;
+        result.width = 55;
+      }
+      else if (that.isAutocompleteColumn(f)) {
         result.enableCellEditOnFocus = false;
         result.cellTemplate = 'cellStateTemplate';
         result.editableCellTemplate = 'cellStateAutocompleteTemplate';
@@ -796,6 +808,7 @@ export default class EditorController {
         that.session.columnDefs = xsvColumns;
         that.session.rowData = that.generateRowDataFromXSV(that.session.parsedXSV.data);
 
+        // that.session.rowData.length = 20;
         that.session.rowData.reverse();
         that.gridOptions.columnDefs = angular.copy(that.session.columnDefs);
         that.gridOptions.data = that.session.rowData;
@@ -844,6 +857,7 @@ export default class EditorController {
 
 
   loadSourceXSV(source, title, url) {
+    console.log('loadSourceXSV', source, title, url);
     this.session.sourceXSV = source;
     this.session.titleXSV = title;
     this.session.XSVURL = url;
@@ -902,6 +916,16 @@ export default class EditorController {
 
   // Grid stuff
 
+  isBooleanColumn(f) {
+    var acEntry = this.session.autocompleteRegistry[f];
+    var result = acEntry &&
+                 acEntry.lookup_type === 'inline' &&
+                 acEntry.idColumn === 'NOT' &&
+                 acEntry.labelColumn === 'NOT';
+    // console.log('isBooleanColumn', f, acEntry);
+    return result;
+  }
+
   isAutocompleteColumn(f) {
     var acEntry = this.session.autocompleteRegistry[f];
     var result = !!acEntry;
@@ -945,7 +969,7 @@ export default class EditorController {
         ],
       maxRowToShow: 5,
       minRowsToShow: 5,
-      virtualizationThreshold: 500000
+      virtualizationThreshold: 5000000
     };
 
     // this.gridOptions.customScroller =
@@ -999,7 +1023,7 @@ export default class EditorController {
 
       if (gridApi.cellNav) {
         gridApi.cellNav.on.viewPortKeyDown(that.$scope, function(event, newRowCol) {
-          console.log('viewPortKeyDown', event.keyCode, newRowCol);
+          // console.log('viewPortKeyDown', event.keyCode, newRowCol);
           var row = newRowCol.row;
           var col = newRowCol.col;
           if (event.keyCode === 32) {

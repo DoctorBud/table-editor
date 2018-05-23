@@ -299,6 +299,26 @@
 </script>
 
 
+<script type="text/ng-template" id="cellStateBooleanTemplate">
+  <div
+    class="ui-grid-cell-contents table-editor-default-cell">
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        ng-model="MODEL_COL_FIELD"
+        name="NOT"
+        ng-true-value="'NOT'"
+        ng-false-value="''"
+        id="defaultCheck1">
+      <label class="form-check-label" for="defaultCheck1">
+        NOT
+      </label>
+    </div>
+  </div>
+</script>
+
+
 <script type="text/ng-template" id="TERowTemplate">
   <div
     ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid"

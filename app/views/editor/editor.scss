@@ -122,10 +122,12 @@ $break5: $header-height + $grid-header-height + $rows5;
 .grid .ui-grid-top-panel {
 }
 
+#grid1.ui-grid {
+  transform: unset !important;
+}
 
 .ui-grid-row {
   height: 100%;
-  // border:1px solid red;
 }
 
 .ui-grid-row-anchor {
@@ -135,15 +137,12 @@ $break5: $header-height + $grid-header-height + $rows5;
 
 .ui-grid-cell-contents {
   line-height:1em;
-  // border: 1px solid red;
   word-wrap: break-word;
   white-space: normal !important;
 }
 
 .ui-grid-cell {
-  // height: 50px !important;
   height: 100%;
-  // border: 1px solid green;
 }
 
 .ui-grid-cell .table-editor-default-cell {
@@ -171,9 +170,11 @@ $break5: $header-height + $grid-header-height + $rows5;
   padding: 0 !important;
   word-wrap: break-word;
   white-space: normal !important;
+  font-size:14px;
+  font-weight: 500;
 }
 
-.ui-grid-cell .typeaheadcontainer {
+.ui-grid-cell div.typeaheadcontainer {
   margin: 0;
   padding: 0;
   resize: none;
@@ -194,37 +195,28 @@ $break5: $header-height + $grid-header-height + $rows5;
   padding:1px;
 }
 
-.ui-grid-cell .typeaheadcontrol {
-  border:1px solid red;
-  width:100%;
-  height:100%;
-}
-
-
-// .ui-grid-cell .typeaheadcontrol {
-//   width:100%;
-//   height:100%;
-// }
-
-// .ui-grid-cell .form-control {
-//   width:100%;
-//   height:100%;
-//   border:3px solid orange;
-// }
-
 button.btn.btn-compact {
   margin:0;
   padding:0;
 }
 
 
+.ui-grid-cell .typeaheadcontrol {
+}
+
+#typeahead-anchor {
+}
+
 .typeahead-is-open {
-  border:2px solid lightblue !important;
+  // border:2px solid red !important;
   position: fixed !important;
-  top: -100px !important;
-  left: 0 !important;
-  right: 0 !important;
-  height:40px !important;
+  box-shadow: 2px #888888;
+  top: 50px !important;
+  height: 40px !important;
+  left: 5% !important;
+  width:90% !important;
+  font-weight: 600;
+  box-shadow: 10px 10px 5px grey;
 }
 
 .typeahead-is-closed {
@@ -234,13 +226,14 @@ button.btn.btn-compact {
 
 .custom-popup-wrapper {
   position: absolute;
-  top: 88px;
-  left: 50px !important;
-  right: 50px !important;
+  top: 90px;
+  left: 5% !important;
+  width:90% !important;
   z-index: 10;
   display: block;
   background-color: #f9f9f9;
-  box-shadow: 5px 10px 8px 10px #888888;
+  box-shadow: 10px 10px 5px grey;
+  border:2px solid lightgray;
 }
 
 .custom-popup-wrapper > .message {
