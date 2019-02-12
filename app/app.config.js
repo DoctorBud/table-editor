@@ -1,5 +1,5 @@
 export default app => {
-  window.INCAFormVersion = '0.0.10';
+  window.INCAFormVersion = '0.0.11';
 
   app.config(['$httpProvider', function config($httpProvider) {
     $httpProvider.defaults.withCredentials = true;

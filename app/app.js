@@ -1,3 +1,4 @@
+import './publicPath.js';
 import angular from 'angular';
 import angularUIRouter from '@uirouter/angularjs';
 
@@ -29,6 +30,7 @@ if (ENVIRONMENT === 'test') {
   console.log('ENV:', ENVIRONMENT);
   require('angular-mocks/angular-mocks');
 }
+
 
 var dependentModules = [angularUIRouter, nguibootstrap, ngsanitize, ngResource, ngFileUpload, jsonformatter,
                         'ui.grid', 'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.cellNav',
